@@ -5,342 +5,715 @@
 }
 
 body {
-    min-height: 100vh;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    background:
-        radial-gradient(
-            circle at 50% 0%,
-            #236d98 0%,
-            #102f4c 35%,
-            #061321 80%
-        );
-
-    font-family: Arial, Helvetica, sans-serif;
-
-    color: white;
-
-    overflow-x: hidden;
+    overflow: hidden;
+    background: #111;
+    font-family: Arial, sans-serif;
+    user-select: none;
 }
 
-.game-container {
-    width: min(900px, 96vw);
-
-    text-align: center;
-
+#game {
     position: relative;
-}
 
-header h1 {
-    font-size: 42px;
+    width: 100vw;
+    height: 100vh;
 
-    color: #9beaff;
-
-    margin-bottom: 4px;
-
-    text-shadow:
-        0 0 8px #00cfff,
-        0 0 18px #0077aa;
-}
-
-header p {
-    color: #c8ecff;
-
-    font-size: 14px;
-
-    margin-bottom: 12px;
-}
-
-
-/* ==========================
-   HUD
-========================== */
-
-.hud {
-    display: grid;
-
-    grid-template-columns:
-        1fr
-        110px
-        110px
-        1fr;
-
-    gap: 8px;
-
-    margin-bottom: 10px;
-}
-
-.player-card,
-.stage-card,
-.banana-card {
-    min-height: 65px;
-
-    padding: 8px;
-
-    border-radius: 10px;
+    overflow: hidden;
 
     background:
         linear-gradient(
-            180deg,
-            rgba(13, 48, 76, .95),
-            rgba(5, 23, 39, .95)
+            to bottom,
+            #36aef5 0%,
+            #9be4ff 65%,
+            #62c93e 65%,
+            #62c93e 100%
         );
-
-    border: 2px solid #285776;
-
-    box-shadow:
-        inset 0 0 12px rgba(0, 210, 255, .08);
 }
 
-.player-card {
-    display: flex;
+/* =========================
+   SOL
+========================= */
 
-    flex-direction: column;
-
-    justify-content: center;
-
-    gap: 3px;
-}
-
-.player-card span {
-    font-size: 13px;
-}
-
-.blue {
-    border-color: #25c9ff;
-}
-
-.blue strong {
-    color: #4bd9ff;
-}
-
-.pink {
-    border-color: #ff62bc;
-}
-
-.pink strong {
-    color: #ff83ca;
-}
-
-.stage-card,
-.banana-card {
-    display: flex;
-
-    flex-direction: column;
-
-    justify-content: center;
-
-    align-items: center;
-}
-
-.stage-card span {
-    font-size: 10px;
-
-    color: #a8d7ec;
-}
-
-.stage-card strong {
-    font-size: 20px;
-
-    color: #ffffff;
-}
-
-.banana-card {
-    font-size: 18px;
-
-    color: #ffe45b;
-}
-
-.banana-card strong {
-    font-size: 18px;
-}
-
-
-/* ==========================
-   CANVAS
-========================== */
-
-#game {
-    width: 100%;
-
-    max-width: 800px;
-
-    height: auto;
-
-    display: block;
-
-    margin: auto;
-
-    background: #04101c;
-
-    border: 4px solid #397ea1;
-
-    border-radius: 12px;
-
-    box-shadow:
-        0 0 25px rgba(0, 204, 255, .28),
-        0 0 60px rgba(0, 110, 180, .12);
-}
-
-
-/* ==========================
-   CONTROLES
-========================== */
-
-.controls {
-    margin-top: 9px;
-
-    display: flex;
-
-    justify-content: space-between;
-
-    gap: 8px;
-
-    padding: 10px;
-
-    background:
-        rgba(4, 20, 35, .9);
-
-    border-radius: 10px;
-
-    border: 1px solid #214d69;
-
-    color: #b9dded;
-
-    font-size: 13px;
-}
-
-.controls .p1 {
-    color: #40d8ff;
-}
-
-.controls .p2 {
-    color: #ff76c4;
-}
-
-
-/* ==========================
-   TELA DE MENSAGEM
-========================== */
-
-.message {
+.sun {
     position: absolute;
 
-    inset: 0;
+    right: 80px;
+    top: 50px;
 
-    display: flex;
+    width: 80px;
+    height: 80px;
 
-    align-items: center;
+    border-radius: 50%;
 
-    justify-content: center;
+    background: #ffe13b;
 
-    background:
-        rgba(1, 10, 20, .72);
+    box-shadow:
+        0 0 30px #fff28a;
+}
 
-    border-radius: 12px;
+/* =========================
+   NUVENS
+========================= */
+
+.cloud {
+    position: absolute;
+
+    width: 130px;
+    height: 40px;
+
+    background: white;
+
+    border-radius: 50px;
+
+    opacity: .9;
+}
+
+.cloud::before,
+.cloud::after {
+    content: "";
+
+    position: absolute;
+
+    background: white;
+
+    border-radius: 50%;
+}
+
+.cloud::before {
+    width: 55px;
+    height: 55px;
+
+    left: 20px;
+    top: -25px;
+}
+
+.cloud::after {
+    width: 60px;
+    height: 60px;
+
+    right: 15px;
+    top: -30px;
+}
+
+.cloud1 {
+    left: 10%;
+    top: 100px;
+}
+
+.cloud2 {
+    left: 50%;
+    top: 70px;
+
+    transform: scale(.7);
+}
+
+.cloud3 {
+    left: 30%;
+    top: 180px;
+
+    transform: scale(.6);
+}
+
+/* =========================
+   CASTELO
+========================= */
+
+.castle {
+    position: absolute;
+
+    right: 50px;
+    bottom: 90px;
+
+    width: 250px;
+    height: 270px;
+
+    background: #777;
+
+    border: 8px solid #444;
+
+    z-index: 5;
+}
+
+.tower {
+    position: absolute;
+
+    bottom: 0;
+
+    width: 65px;
+    height: 230px;
+
+    background: #888;
+
+    border: 7px solid #444;
+}
+
+.tower-left {
+    left: -55px;
+}
+
+.tower-right {
+    right: -55px;
+}
+
+.tower::before {
+    content: "";
+
+    position: absolute;
+
+    left: -12px;
+    top: -45px;
+
+    width: 75px;
+    height: 45px;
+
+    background: #555;
+
+    clip-path: polygon(
+        0 100%,
+        20% 0,
+        40% 100%,
+        60% 0,
+        80% 100%,
+        100% 0,
+        100% 100%
+    );
+}
+
+.flag {
+    position: absolute;
+
+    left: 120px;
+    top: -90px;
+
+    width: 6px;
+    height: 90px;
+
+    background: #222;
+}
+
+.flag::after {
+    content: "★";
+
+    position: absolute;
+
+    left: 5px;
+    top: 5px;
+
+    padding: 5px 10px;
+
+    color: white;
+
+    background: #e60000;
+}
+
+/* =========================
+   PEACH
+========================= */
+
+#peach {
+    position: absolute;
+
+    left: 100px;
+    top: 60px;
+
+    width: 55px;
+    height: 100px;
 
     z-index: 10;
 }
 
-.hidden {
-    display: none;
+.peach-head {
+    width: 42px;
+    height: 42px;
+
+    margin: auto;
+
+    border-radius: 50%;
+
+    background: #ffc39c;
+
+    border: 3px solid #713628;
 }
 
-.message-box {
-    width: min(500px, 90%);
+.peach-body {
+    width: 55px;
+    height: 55px;
 
-    padding: 35px 25px;
+    background: #f48bbb;
+
+    border: 3px solid #8a2d51;
+
+    border-radius: 50% 50% 15px 15px;
+}
+
+.crown {
+    position: absolute;
+
+    left: 14px;
+    top: -5px;
+
+    width: 30px;
+    height: 15px;
+
+    background: #ffd92f;
+
+    clip-path: polygon(
+        0 100%,
+        0 0,
+        35% 55%,
+        50% 0,
+        70% 55%,
+        100% 0,
+        100% 100%
+    );
+}
+
+/* =========================
+   CHÃO
+========================= */
+
+.ground {
+    position: absolute;
+
+    left: 0;
+    bottom: 0;
+
+    width: 100%;
+    height: 90px;
 
     background:
-        linear-gradient(
-            180deg,
-            #103b59,
-            #061522
+        repeating-linear-gradient(
+            45deg,
+            #a85b27 0,
+            #a85b27 20px,
+            #8c451c 20px,
+            #8c451c 40px
         );
 
-    border: 3px solid #5be4ff;
+    border-top: 12px solid #39972c;
 
-    border-radius: 18px;
-
-    box-shadow:
-        0 0 35px rgba(0, 220, 255, .5);
+    z-index: 15;
 }
 
-.message-box h2 {
-    color: #a4efff;
+/* =========================
+   PLATAFORMAS
+========================= */
 
-    font-size: 34px;
+.platform {
+    position: absolute;
 
-    margin-bottom: 12px;
+    height: 25px;
+
+    background: #a85b27;
+
+    border: 5px solid #713717;
+
+    z-index: 10;
 }
 
-.message-box p {
-    color: #d3efff;
+.platform1 {
+    left: 8%;
+    bottom: 220px;
 
-    line-height: 1.5;
-
-    margin-bottom: 20px;
+    width: 230px;
 }
 
-.message-box button {
-    padding: 12px 28px;
+.platform2 {
+    left: 35%;
+    bottom: 330px;
 
-    border: 0;
+    width: 230px;
+}
 
-    border-radius: 9px;
+.platform3 {
+    left: 63%;
+    bottom: 220px;
 
-    background:
-        linear-gradient(
-            135deg,
-            #15a9dd,
-            #1471b4
-        );
+    width: 200px;
+}
+
+/* =========================
+   HUD
+========================= */
+
+#hud {
+    position: absolute;
+
+    top: 15px;
+    left: 15px;
+    right: 15px;
+
+    display: flex;
+    justify-content: space-between;
+
+    z-index: 50;
+}
+
+.hud-player {
+    width: 280px;
+
+    padding: 10px;
 
     color: white;
 
+    background: rgba(0,0,0,.75);
+
+    border: 3px solid white;
+
+    border-radius: 10px;
+}
+
+.health {
+    width: 100%;
+    height: 20px;
+
+    margin-top: 7px;
+
+    background: #222;
+
+    border: 2px solid white;
+}
+
+#marioHealth {
+    width: 100%;
+    height: 100%;
+
+    background: #e31d27;
+
+    transition: width .2s;
+}
+
+#bowserHealth {
+    width: 100%;
+    height: 100%;
+
+    background: #39cf38;
+
+    transition: width .2s;
+}
+
+/* =========================
+   PERSONAGENS
+========================= */
+
+.character {
+    position: absolute;
+
+    width: 60px;
+    height: 90px;
+
+    z-index: 30;
+}
+
+/* CABEÇA */
+
+.head {
+    position: absolute;
+
+    width: 45px;
+    height: 45px;
+
+    left: 7px;
+    top: 0;
+
+    border-radius: 45%;
+}
+
+/* CORPO */
+
+.body {
+    position: absolute;
+
+    left: 6px;
+    top: 40px;
+
+    width: 48px;
+    height: 40px;
+
+    border-radius: 12px 12px 5px 5px;
+}
+
+/* =========================
+   MARIO
+========================= */
+
+.mario-head {
+    background: #f2a36f;
+
+    border: 3px solid #542719;
+}
+
+.mario-head::before {
+    content: "";
+
+    position: absolute;
+
+    left: -4px;
+    top: -5px;
+
+    width: 47px;
+    height: 17px;
+
+    background: #e31d27;
+
+    border-radius: 50%;
+}
+
+.mario-head span {
+    position: absolute;
+
+    top: -2px;
+    left: 16px;
+
+    color: white;
+
+    font-weight: bold;
+
+    z-index: 5;
+}
+
+.mario-body {
+    background: #e31d27;
+
+    border: 3px solid #661017;
+}
+
+.mario::after {
+    content: "";
+
+    position: absolute;
+
+    left: 5px;
+    bottom: -3px;
+
+    width: 52px;
+    height: 15px;
+
+    background: #512f1d;
+
+    border-radius: 50%;
+}
+
+/* =========================
+   BOWSER
+========================= */
+
+.bowser {
+    width: 75px;
+    height: 100px;
+}
+
+.bowser-head {
+    width: 58px;
+    height: 55px;
+
+    background: #58bd38;
+
+    border: 4px solid #1e5c15;
+
+    border-radius: 45%;
+}
+
+.bowser-head::before {
+    content: "▲ ▲";
+
+    position: absolute;
+
+    left: 5px;
+    top: -22px;
+
+    color: #fff0c5;
+
+    font-size: 18px;
+}
+
+.bowser-head::after {
+    content: "•   •";
+
+    position: absolute;
+
+    left: 12px;
+    top: 18px;
+
+    color: #111;
+
+    font-size: 18px;
+}
+
+.bowser-body {
+    width: 62px;
+    height: 47px;
+
+    left: 0;
+    top: 50px;
+
+    background: #d88d28;
+
+    border: 4px solid #743d0c;
+
+    border-radius: 40%;
+}
+
+.bowser::after {
+    content: "✦ ✦";
+
+    position: absolute;
+
+    left: 13px;
+    top: 58px;
+
+    color: #fff0c5;
+
     font-size: 16px;
+}
+
+/* =========================
+   ATAQUES
+========================= */
+
+.attack {
+    position: absolute;
+
+    width: 60px;
+    height: 40px;
+
+    display: none;
+
+    z-index: 40;
+
+    text-align: center;
+
+    font-size: 28px;
+}
+
+.mario-attack {
+    background: white;
+
+    border: 4px solid #ffd21f;
+
+    border-radius: 50%;
+}
+
+.bowser-attack {
+    background: #ff641c;
+
+    border: 4px solid #991c00;
+
+    border-radius: 50%;
+}
+
+/* =========================
+   CONTROLES
+========================= */
+
+.controls {
+    position: absolute;
+
+    left: 50%;
+    bottom: 100px;
+
+    transform: translateX(-50%);
+
+    z-index: 60;
+
+    display: flex;
+    gap: 30px;
+
+    padding: 10px 20px;
+
+    color: white;
+
+    background: rgba(0,0,0,.65);
+
+    border-radius: 10px;
+
+    font-size: 13px;
+
+    white-space: nowrap;
+}
+
+/* =========================
+   MENU
+========================= */
+
+#menu {
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 100;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(0,0,0,.78);
+
+    color: white;
+
+    text-align: center;
+}
+
+.menu-box {
+    width: min(650px, 90%);
+
+    padding: 30px;
+
+    background: #222;
+
+    border: 5px solid white;
+
+    border-radius: 15px;
+}
+
+.menu-box h1 {
+    margin-bottom: 15px;
+
+    color: #ffd52f;
+
+    font-size: 36px;
+}
+
+.menu-box h2 {
+    margin-bottom: 15px;
+
+    color: #ff5555;
+}
+
+.menu-box p {
+    margin: 10px;
+
+    line-height: 1.5;
+}
+
+.menu-box hr {
+    margin: 20px 0;
+
+    border: none;
+
+    border-top: 2px solid #555;
+}
+
+#startButton {
+    margin-top: 15px;
+
+    padding: 14px 35px;
+
+    color: white;
+
+    background: #e52521;
+
+    border: 3px solid white;
+
+    border-radius: 8px;
+
+    font-size: 20px;
 
     font-weight: bold;
 
     cursor: pointer;
-
-    transition: .2s;
 }
 
-.message-box button:hover {
-    transform: scale(1.05);
-
-    box-shadow:
-        0 0 15px #20d6ff;
-}
-
-
-/* ==========================
-   RESPONSIVO
-========================== */
-
-@media (max-width: 700px) {
-
-    header h1 {
-        font-size: 30px;
-    }
-
-    .hud {
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .stage-card {
-        grid-column: 1;
-    }
-
-    .banana-card {
-        grid-column: 2;
-    }
-
-    .controls {
-        flex-direction: column;
-    }
+#startButton:hover {
+    background: #ff4a45;
 }

@@ -4,93 +4,158 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Gelinho - Banana Quest</title>
+    <title>Mario vs Bowser</title>
 
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<div class="game-container">
+<div id="game">
 
-    <header>
-        <h1>🧊 GELINHO 🍌</h1>
+    <div class="sun"></div>
 
-        <p>
-            Colete todas as bananinhas e passe pelas 10 fases!
-        </p>
-    </header>
+    <div class="cloud cloud1"></div>
+    <div class="cloud cloud2"></div>
+    <div class="cloud cloud3"></div>
 
-    <div class="hud">
+    <div class="castle">
 
-        <div class="player-card blue">
-            <strong>🔵 JOGADOR 1</strong>
+        <div class="tower tower-left"></div>
+        <div class="tower tower-right"></div>
 
-            <span>
-                ❤️ <b id="lives1">3</b>
-            </span>
+        <div class="flag"></div>
 
-            <span>
-                Pontos: <b id="score1">0</b>
-            </span>
-        </div>
-
-        <div class="stage-card">
-            <span>FASE</span>
-            <strong id="level">1 / 10</strong>
-        </div>
-
-        <div class="banana-card">
-            🍌
-            <strong id="bananas">0</strong>
-        </div>
-
-        <div class="player-card pink">
-            <strong>🩷 JOGADOR 2</strong>
-
-            <span>
-                ❤️ <b id="lives2">3</b>
-            </span>
-
-            <span>
-                Pontos: <b id="score2">0</b>
-            </span>
+        <div id="peach">
+            <div class="peach-head"></div>
+            <div class="peach-body"></div>
+            <div class="crown"></div>
         </div>
 
     </div>
 
-    <canvas
-        id="game"
-        width="800"
-        height="600">
-    </canvas>
+    <div class="platform platform1"></div>
+    <div class="platform platform2"></div>
+    <div class="platform platform3"></div>
+
+    <div class="ground"></div>
+
+    <!-- HUD -->
+
+    <div id="hud">
+
+        <div class="hud-player">
+            <strong>🍄 MARIO - JOGADOR 1</strong>
+
+            <div class="health">
+                <div id="marioHealth"></div>
+            </div>
+        </div>
+
+        <div class="hud-player">
+            <strong>🐢 BOWSER - JOGADOR 2</strong>
+
+            <div class="health">
+                <div id="bowserHealth"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MARIO -->
+
+    <div id="mario" class="character mario">
+
+        <div class="head mario-head">
+            <span>M</span>
+        </div>
+
+        <div class="body mario-body"></div>
+
+        <div class="foot foot1"></div>
+        <div class="foot foot2"></div>
+
+    </div>
+
+    <!-- BOWSER -->
+
+    <div id="bowser" class="character bowser">
+
+        <div class="head bowser-head"></div>
+
+        <div class="body bowser-body"></div>
+
+        <div class="foot foot1"></div>
+        <div class="foot foot2"></div>
+
+    </div>
+
+    <!-- ATAQUES -->
+
+    <div id="marioAttack" class="attack mario-attack">
+        ⭐
+    </div>
+
+    <div id="bowserAttack" class="attack bowser-attack">
+        🔥
+    </div>
+
+    <!-- CONTROLES -->
 
     <div class="controls">
 
-        <span class="p1">
-            🔵 P1: <b>W A S D</b>
-        </span>
-
-        <span class="p2">
-            🩷 P2: <b>SETAS</b>
+        <span>
+            🍄 Mario:
+            <b>A D</b> mover |
+            <b>W</b> pular |
+            <b>F</b> atacar
         </span>
 
         <span>
-            🔄 <b>R</b> Reiniciar
+            🐢 Bowser:
+            <b>← →</b> mover |
+            <b>↑</b> pular |
+            <b>L</b> atacar
         </span>
 
     </div>
 
-    <div id="message" class="message hidden">
+    <!-- TELA INICIAL -->
 
-        <div class="message-box">
+    <div id="menu">
 
-            <h2 id="messageTitle"></h2>
+        <div class="menu-box">
 
-            <p id="messageText"></p>
+            <h1>🍄 MARIO VS BOWSER 🐢</h1>
 
-            <button id="messageButton">
-                Continuar
+            <h2>O combate pelo castelo começou!</h2>
+
+            <p>
+                Peach está presa dentro do castelo.
+            </p>
+
+            <p>
+                Mario precisa derrotar Bowser para libertá-la.
+            </p>
+
+            <hr>
+
+            <p>
+                <b>JOGADOR 1</b><br>
+                A / D = andar<br>
+                W = pular<br>
+                F = atacar
+            </p>
+
+            <p>
+                <b>JOGADOR 2</b><br>
+                ← / → = andar<br>
+                ↑ = pular<br>
+                L = atacar
+            </p>
+
+            <button id="startButton">
+                COMEÇAR
             </button>
 
         </div>
