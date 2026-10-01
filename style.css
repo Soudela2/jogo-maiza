@@ -5,290 +5,480 @@
 }
 
 body {
-    background:
-        radial-gradient(circle at top, #29204f, #090914 70%);
-    color: white;
-    font-family: Arial, sans-serif;
+
     min-height: 100vh;
 
+    background:
+        radial-gradient(
+            circle at top,
+            #30204f,
+            #090914 70%
+        );
+
+    color: white;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
     display: flex;
-    justify-content: center;
+
     align-items: center;
+
+    justify-content: center;
 
     overflow: hidden;
 }
 
 
-/* ==============================
+/* =====================================
    MENU
-============================== */
+===================================== */
 
 #menu {
+
     width: 100%;
     height: 100vh;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 }
 
+
 .menu-box {
-    width: 650px;
-    max-width: 90%;
+
+    width: 750px;
+    max-width: 92%;
 
     padding: 45px;
 
     text-align: center;
 
+    border-radius: 25px;
+
     background:
         linear-gradient(
             145deg,
-            rgba(38, 29, 70, 0.97),
-            rgba(15, 15, 35, 0.97)
+            #29204b,
+            #111122
         );
 
-    border: 2px solid #7354a8;
-    border-radius: 25px;
+    border: 2px solid #62488f;
 
     box-shadow:
-        0 0 40px rgba(100, 50, 180, 0.35);
+        0 0 60px rgba(
+            100,
+            60,
+            180,
+            .3
+        );
 }
 
+
 .menu-box h1 {
-    font-size: 48px;
+
+    font-size: 44px;
+
     margin-bottom: 15px;
 
     text-shadow:
-        0 0 15px rgba(255, 255, 255, .25);
+        0 0 15px
+        rgba(255,255,255,.25);
 }
 
+
 .menu-box > p {
-    color: #c7c3dc;
-    margin-bottom: 35px;
+
+    color: #c5c0d7;
+
+    margin-bottom: 30px;
+
     font-size: 18px;
 }
 
 
-/* CONTROLES */
+/* =====================================
+   CARTÕES
+===================================== */
 
-.controls {
+.players {
+
     display: flex;
-    justify-content: center;
+
     gap: 25px;
+
+    justify-content: center;
 
     margin-bottom: 35px;
 }
 
-.controls > div {
-    width: 220px;
 
-    padding: 20px;
+.player-card {
+
+    width: 250px;
+
+    padding: 22px;
 
     border-radius: 18px;
 
-    background: rgba(255,255,255,.06);
-    border: 1px solid rgba(255,255,255,.12);
-}
+    background:
+        rgba(255,255,255,.06);
 
-.controls h2 {
-    margin-bottom: 12px;
-}
-
-.controls p {
-    font-size: 25px;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.controls small {
-    color: #aaa;
-    line-height: 1.5;
+    border: 2px solid
+        rgba(255,255,255,.08);
 }
 
 
-/* BOTÕES */
+.player-card h2 {
+
+    margin-bottom: 18px;
+}
+
+
+.player-card p {
+
+    margin: 10px;
+
+    color: #ccc;
+}
+
+
+.player-card.red {
+
+    border-color:
+        rgba(255,65,65,.5);
+}
+
+
+.player-card.blue {
+
+    border-color:
+        rgba(50,150,255,.5);
+}
+
+
+/* =====================================
+   BOTÕES
+===================================== */
 
 button {
+
     border: none;
 
-    padding: 15px 45px;
+    padding: 15px 35px;
 
     border-radius: 12px;
 
     background:
-        linear-gradient(135deg, #ff4c32, #ff7b29);
+        linear-gradient(
+            135deg,
+            #ff4545,
+            #ff7a28
+        );
 
     color: white;
 
-    font-size: 18px;
+    font-size: 17px;
+
     font-weight: bold;
 
     cursor: pointer;
 
-    box-shadow:
-        0 5px 20px rgba(255, 70, 40, .3);
-
     transition: .2s;
+
+    box-shadow:
+        0 5px 20px
+        rgba(255,70,40,.3);
 }
 
+
 button:hover {
-    transform: scale(1.05);
+
+    transform:
+        translateY(-2px)
+        scale(1.03);
+
     filter: brightness(1.15);
 }
 
 
-/* ==============================
+/* =====================================
    JOGO
-============================== */
+===================================== */
 
 #game {
+
     display: none;
+
+    position: relative;
 
     width: 100vw;
     height: 100vh;
 
-    position: relative;
-
-    justify-content: center;
     align-items: center;
+    justify-content: center;
 }
+
 
 canvas {
-    width: min(1200px, 96vw);
+
+    width: min(
+        1200px,
+        96vw
+    );
+
     height: auto;
 
-    max-height: 88vh;
-
     border-radius: 12px;
+
+    border: 2px solid #49356b;
 
     box-shadow:
-        0 0 40px rgba(0,0,0,.7);
-
-    border: 2px solid #453668;
+        0 0 50px
+        rgba(0,0,0,.8);
 }
 
 
-/* ==============================
-   BARRA SUPERIOR
-============================== */
+/* =====================================
+   HUD
+===================================== */
 
-.topbar {
+.hud {
+
     position: absolute;
 
-    top: 10px;
+    top: 12px;
+
     left: 50%;
 
-    transform: translateX(-50%);
+    transform:
+        translateX(-50%);
 
-    width: min(1100px, 90vw);
+    width: min(
+        1100px,
+        90vw
+    );
 
     display: flex;
+
+    align-items: center;
+
     justify-content: space-between;
 
-    z-index: 5;
-
-    padding: 10px 18px;
-
-    background: rgba(8, 8, 20, .75);
-
-    border-radius: 12px;
-
-    color: #ddd;
-
-    font-size: 14px;
+    z-index: 10;
 }
 
 
-/* ==============================
-   TELA DE MENSAGEM
-============================== */
+.hud-player {
 
-#mensagem {
+    width: 330px;
+}
+
+
+.hud-player.right {
+
+    text-align: right;
+}
+
+
+.hud-player span {
+
+    display: block;
+
+    margin-bottom: 5px;
+
+    font-weight: bold;
+}
+
+
+.health {
+
+    width: 100%;
+
+    height: 20px;
+
+    background: #242432;
+
+    border-radius: 10px;
+
+    overflow: hidden;
+
+    border: 2px solid #555;
+}
+
+
+.health div {
+
+    width: 100%;
+
+    height: 100%;
+
+    background:
+        linear-gradient(
+            90deg,
+            #ff2626,
+            #ff7b32
+        );
+
+    transition:
+        width .2s;
+}
+
+
+#vida2 {
+
+    background:
+        linear-gradient(
+            90deg,
+            #248aff,
+            #51d5ff
+        );
+}
+
+
+.timer {
+
+    font-size: 30px;
+
+    font-weight: bold;
+
+    color: white;
+
+    text-shadow:
+        0 0 10px
+        rgba(255,255,255,.5);
+}
+
+
+/* =====================================
+   RESULTADO
+===================================== */
+
+#resultado {
+
     position: absolute;
 
     inset: 0;
 
     display: none;
 
-    justify-content: center;
     align-items: center;
+    justify-content: center;
 
-    background: rgba(0,0,0,.7);
+    background:
+        rgba(0,0,0,.72);
 
     z-index: 20;
 }
 
-.message-box {
+
+.result-box {
+
     width: 500px;
+
     max-width: 90%;
 
     padding: 40px;
 
     text-align: center;
 
+    border-radius: 25px;
+
     background:
         linear-gradient(
             145deg,
-            #241d43,
-            #0e0e20
+            #2a204c,
+            #111122
         );
 
-    border: 2px solid #7255a9;
-
-    border-radius: 22px;
+    border: 2px solid #7353a7;
 
     box-shadow:
-        0 0 50px rgba(120, 70, 200, .3);
+        0 0 60px
+        rgba(100,60,180,.4);
 }
 
-.message-box h1 {
-    font-size: 35px;
+
+.result-box h1 {
+
+    font-size: 42px;
+
     margin-bottom: 15px;
 }
 
-.message-box p {
+
+.result-box p {
+
     color: #bbb;
+
     margin-bottom: 25px;
 }
 
-.menu-button {
+
+.secondary {
+
     margin-left: 10px;
 
     background:
         linear-gradient(
             135deg,
-            #3d3d60,
-            #25253e
+            #42425f,
+            #25253d
         );
 
     box-shadow: none;
 }
 
 
-/* ==============================
+/* =====================================
    RESPONSIVO
-============================== */
+===================================== */
 
 @media (max-width: 700px) {
 
     .menu-box {
+
         padding: 25px;
     }
 
+
     .menu-box h1 {
-        font-size: 32px;
+
+        font-size: 30px;
     }
 
-    .controls {
+
+    .players {
+
         flex-direction: column;
+
         align-items: center;
     }
 
-    .controls > div {
+
+    .player-card {
+
         width: 100%;
     }
 
-    .topbar {
+
+    .hud {
+
         font-size: 11px;
+    }
+
+
+    .hud-player {
+
+        width: 35%;
+    }
+
+
+    .timer {
+
+        font-size: 20px;
     }
 }

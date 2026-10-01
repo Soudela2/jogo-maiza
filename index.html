@@ -1,66 +1,152 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fogo & Água - Aventura</title>
+
+    <title>Batalha dos Heróis</title>
+
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
+    <!-- MENU -->
+
     <div id="menu">
+
         <div class="menu-box">
-            <h1>🔥 FOGO & ÁGUA 💧</h1>
-            <p>Uma aventura para dois jogadores!</p>
 
-            <div class="controls">
-                <div>
-                    <h2>🔥 Foguinho</h2>
-                    <p>W A D</p>
-                    <small>W = pular<br>A/D = andar</small>
+            <h1>⚔️ BATALHA DOS HERÓIS</h1>
+
+            <p>
+                Dois jogadores entram na arena.
+                Apenas um pode vencer!
+            </p>
+
+            <div class="players">
+
+                <div class="player-card red">
+
+                    <h2>🔴 JOGADOR 1</h2>
+
+                    <p>
+                        <b>A / D</b> — andar
+                    </p>
+
+                    <p>
+                        <b>W</b> — pular
+                    </p>
+
+                    <p>
+                        <b>F</b> — atacar
+                    </p>
+
                 </div>
 
-                <div>
-                    <h2>💧 Aguinha</h2>
-                    <p>↑ ← →</p>
-                    <small>↑ = pular<br>←/→ = andar</small>
+
+                <div class="player-card blue">
+
+                    <h2>🔵 JOGADOR 2</h2>
+
+                    <p>
+                        <b>← / →</b> — andar
+                    </p>
+
+                    <p>
+                        <b>↑</b> — pular
+                    </p>
+
+                    <p>
+                        <b>L</b> — atacar
+                    </p>
+
                 </div>
+
             </div>
 
-            <button onclick="iniciarJogo()">JOGAR</button>
+            <button onclick="iniciarJogo()">
+                COMEÇAR BATALHA
+            </button>
+
         </div>
+
     </div>
 
 
+    <!-- JOGO -->
+
     <div id="game">
 
-        <div class="topbar">
-            <div>🔥 Foguinho: <b>W A D</b></div>
-            <div>💧 Aguinha: <b>← ↑ →</b></div>
+        <div class="hud">
+
+            <div class="hud-player">
+
+                <span>🔴 HERÓI 1</span>
+
+                <div class="health">
+                    <div id="vida1"></div>
+                </div>
+
+            </div>
+
+
+            <div class="timer" id="timer">
+                90
+            </div>
+
+
+            <div class="hud-player right">
+
+                <span>🔵 HERÓI 2</span>
+
+                <div class="health">
+                    <div id="vida2"></div>
+                </div>
+
+            </div>
+
         </div>
+
 
         <canvas id="canvas"></canvas>
 
-        <div id="mensagem">
-            <div class="message-box">
-                <h1 id="tituloMensagem"></h1>
-                <p id="textoMensagem">
-                    Trabalhem juntos para completar a fase!
+
+        <!-- TELA FINAL -->
+
+        <div id="resultado">
+
+            <div class="result-box">
+
+                <h1 id="resultadoTitulo">
+                    VITÓRIA!
+                </h1>
+
+                <p id="resultadoTexto">
+                    O vencedor dominou a arena!
                 </p>
 
                 <button onclick="reiniciarJogo()">
                     JOGAR NOVAMENTE
                 </button>
 
-                <button class="menu-button" onclick="voltarMenu()">
+                <button
+                    class="secondary"
+                    onclick="voltarMenu()"
+                >
                     MENU
                 </button>
+
             </div>
+
         </div>
 
     </div>
 
+
     <script src="script.js"></script>
+
 </body>
+
 </html>
