@@ -1,0 +1,144 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background:
+        radial-gradient(
+            circle at top,
+            #263b67 0%,
+            #11182c 45%,
+            #070b16 100%
+        );
+
+    color: white;
+
+    font-family: Arial, sans-serif;
+
+    overflow: hidden;
+}
+
+#gameContainer {
+    width: min(1000px, 96vw);
+
+    text-align: center;
+}
+
+h1 {
+    margin-bottom: 5px;
+
+    color: white;
+
+    text-shadow:
+        0 0 10px #00d9ff,
+        0 0 20px #00d9ff;
+}
+
+#info {
+    margin-bottom: 10px;
+
+    color: #d7e8ff;
+
+    font-size: 14px;
+}
+
+#game {
+    display: block;
+
+    width: 100%;
+    max-width: 960px;
+
+    aspect-ratio: 16 / 9;
+
+    margin: auto;
+
+    background: #10182d;
+
+    border: 4px solid #536a9c;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 0 25px rgba(0, 190, 255, 0.25),
+        inset 0 0 40px rgba(0, 0, 0, 0.5);
+}
+
+#controls {
+    display: flex;
+
+    justify-content: space-between;
+
+    margin-top: 8px;
+
+    font-size: 14px;
+
+    color: #cbd8ff;
+}
+
+.fireText {
+    color: #ff5b31;
+
+    font-weight: bold;
+}
+
+.waterText {
+    color: #35cfff;
+
+    font-weight: bold;
+}
+
+button {
+    margin-top: 10px;
+
+    padding: 10px 25px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background: #263c70;
+
+    color: white;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+button:hover {
+    background: #385a9d;
+
+    transform: scale(1.05);
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+@media (max-width: 700px) {
+
+    body {
+        overflow: auto;
+    }
+
+    #controls {
+        flex-direction: column;
+
+        gap: 5px;
+    }
+
+    h1 {
+        font-size: 25px;
+    }
+
+}
