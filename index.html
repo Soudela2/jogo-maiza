@@ -3,31 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fogo e Água</title>
+    <title>Fogo & Água</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<div class="game-wrapper">
+    <div id="menu">
+        <h1>🔥 FOGO & 💧 ÁGUA</h1>
 
-    <div class="hud">
-        <div class="fire-info">🔥 Fogo: A D W</div>
-        <div class="water-info">💧 Água: ← → ↑</div>
+        <p>Jogo cooperativo para 2 jogadores</p>
+
+        <div class="controles">
+            <div>
+                <h2>🔥 Foguinho</h2>
+                <p>A = Esquerda</p>
+                <p>W = Pular</p>
+                <p>D = Direita</p>
+            </div>
+
+            <div>
+                <h2>💧 Água</h2>
+                <p>← = Esquerda</p>
+                <p>↑ = Pular</p>
+                <p>→ = Direita</p>
+            </div>
+        </div>
+
+        <button onclick="iniciarJogo()">JOGAR</button>
     </div>
 
-    <canvas id="game" width="1000" height="600"></canvas>
+    <div id="game">
+        <div id="hud">
+            <span>🔥 Foguinho</span>
+            <span>💧 Água</span>
+        </div>
 
-    <div id="screen">
-        <h1>🔥 Fogo & Água 💧</h1>
-        <p>Dois jogadores precisam chegar às portas.</p>
-        <button id="play">JOGAR</button>
+        <canvas id="canvas"></canvas>
+
+        <div id="mensagem">
+            <h1 id="tituloMensagem"></h1>
+            <button onclick="reiniciarJogo()">Jogar novamente</button>
+        </div>
     </div>
 
-</div>
-
-<script src="script.js"></script>
-
+    <script src="script.js"></script>
 </body>
 </html>
-
