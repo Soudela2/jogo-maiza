@@ -4,44 +4,102 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Fogo & Água</title>
+    <title>Gelinho - Banana Quest</title>
 
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <main id="gameContainer">
+<div class="game-container">
 
-        <h1>🔥 Fogo & Água 💧</h1>
+    <header>
+        <h1>🧊 GELINHO 🍌</h1>
 
-        <p id="info">
-            Trabalhem juntos para pegar as gemas e chegar às portas!
+        <p>
+            Colete todas as bananinhas e passe pelas 10 fases!
         </p>
+    </header>
 
-        <canvas id="game" width="960" height="540"></canvas>
+    <div class="hud">
 
-        <div id="controls">
-            <span class="fireText">
-                🔥 Fogo: W A S D
+        <div class="player-card blue">
+            <strong>🔵 JOGADOR 1</strong>
+
+            <span>
+                ❤️ <b id="lives1">3</b>
             </span>
 
             <span>
-                R = Reiniciar
-            </span>
-
-            <span class="waterText">
-                💧 Água: ↑ ← ↓ →
+                Pontos: <b id="score1">0</b>
             </span>
         </div>
 
-        <button id="restartButton">
-            Reiniciar
-        </button>
+        <div class="stage-card">
+            <span>FASE</span>
+            <strong id="level">1 / 10</strong>
+        </div>
 
-    </main>
+        <div class="banana-card">
+            🍌
+            <strong id="bananas">0</strong>
+        </div>
 
-    <script src="script.js"></script>
+        <div class="player-card pink">
+            <strong>🩷 JOGADOR 2</strong>
+
+            <span>
+                ❤️ <b id="lives2">3</b>
+            </span>
+
+            <span>
+                Pontos: <b id="score2">0</b>
+            </span>
+        </div>
+
+    </div>
+
+    <canvas
+        id="game"
+        width="800"
+        height="600">
+    </canvas>
+
+    <div class="controls">
+
+        <span class="p1">
+            🔵 P1: <b>W A S D</b>
+        </span>
+
+        <span class="p2">
+            🩷 P2: <b>SETAS</b>
+        </span>
+
+        <span>
+            🔄 <b>R</b> Reiniciar
+        </span>
+
+    </div>
+
+    <div id="message" class="message hidden">
+
+        <div class="message-box">
+
+            <h2 id="messageTitle"></h2>
+
+            <p id="messageText"></p>
+
+            <button id="messageButton">
+                Continuar
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="script.js"></script>
 
 </body>
 </html>

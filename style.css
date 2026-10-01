@@ -13,132 +13,334 @@ body {
 
     background:
         radial-gradient(
-            circle at top,
-            #263b67 0%,
-            #11182c 45%,
-            #070b16 100%
+            circle at 50% 0%,
+            #236d98 0%,
+            #102f4c 35%,
+            #061321 80%
         );
 
+    font-family: Arial, Helvetica, sans-serif;
+
     color: white;
 
-    font-family: Arial, sans-serif;
-
-    overflow: hidden;
+    overflow-x: hidden;
 }
 
-#gameContainer {
-    width: min(1000px, 96vw);
+.game-container {
+    width: min(900px, 96vw);
 
     text-align: center;
+
+    position: relative;
 }
 
-h1 {
-    margin-bottom: 5px;
+header h1 {
+    font-size: 42px;
 
-    color: white;
+    color: #9beaff;
+
+    margin-bottom: 4px;
 
     text-shadow:
-        0 0 10px #00d9ff,
-        0 0 20px #00d9ff;
+        0 0 8px #00cfff,
+        0 0 18px #0077aa;
 }
 
-#info {
-    margin-bottom: 10px;
-
-    color: #d7e8ff;
+header p {
+    color: #c8ecff;
 
     font-size: 14px;
+
+    margin-bottom: 12px;
 }
 
+
+/* ==========================
+   HUD
+========================== */
+
+.hud {
+    display: grid;
+
+    grid-template-columns:
+        1fr
+        110px
+        110px
+        1fr;
+
+    gap: 8px;
+
+    margin-bottom: 10px;
+}
+
+.player-card,
+.stage-card,
+.banana-card {
+    min-height: 65px;
+
+    padding: 8px;
+
+    border-radius: 10px;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(13, 48, 76, .95),
+            rgba(5, 23, 39, .95)
+        );
+
+    border: 2px solid #285776;
+
+    box-shadow:
+        inset 0 0 12px rgba(0, 210, 255, .08);
+}
+
+.player-card {
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    gap: 3px;
+}
+
+.player-card span {
+    font-size: 13px;
+}
+
+.blue {
+    border-color: #25c9ff;
+}
+
+.blue strong {
+    color: #4bd9ff;
+}
+
+.pink {
+    border-color: #ff62bc;
+}
+
+.pink strong {
+    color: #ff83ca;
+}
+
+.stage-card,
+.banana-card {
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: center;
+}
+
+.stage-card span {
+    font-size: 10px;
+
+    color: #a8d7ec;
+}
+
+.stage-card strong {
+    font-size: 20px;
+
+    color: #ffffff;
+}
+
+.banana-card {
+    font-size: 18px;
+
+    color: #ffe45b;
+}
+
+.banana-card strong {
+    font-size: 18px;
+}
+
+
+/* ==========================
+   CANVAS
+========================== */
+
 #game {
-    display: block;
-
     width: 100%;
-    max-width: 960px;
 
-    aspect-ratio: 16 / 9;
+    max-width: 800px;
+
+    height: auto;
+
+    display: block;
 
     margin: auto;
 
-    background: #10182d;
+    background: #04101c;
 
-    border: 4px solid #536a9c;
+    border: 4px solid #397ea1;
 
     border-radius: 12px;
 
     box-shadow:
-        0 0 25px rgba(0, 190, 255, 0.25),
-        inset 0 0 40px rgba(0, 0, 0, 0.5);
+        0 0 25px rgba(0, 204, 255, .28),
+        0 0 60px rgba(0, 110, 180, .12);
 }
 
-#controls {
+
+/* ==========================
+   CONTROLES
+========================== */
+
+.controls {
+    margin-top: 9px;
+
     display: flex;
 
     justify-content: space-between;
 
-    margin-top: 8px;
+    gap: 8px;
 
-    font-size: 14px;
+    padding: 10px;
 
-    color: #cbd8ff;
+    background:
+        rgba(4, 20, 35, .9);
+
+    border-radius: 10px;
+
+    border: 1px solid #214d69;
+
+    color: #b9dded;
+
+    font-size: 13px;
 }
 
-.fireText {
-    color: #ff5b31;
-
-    font-weight: bold;
+.controls .p1 {
+    color: #40d8ff;
 }
 
-.waterText {
-    color: #35cfff;
-
-    font-weight: bold;
+.controls .p2 {
+    color: #ff76c4;
 }
 
-button {
-    margin-top: 10px;
 
-    padding: 10px 25px;
+/* ==========================
+   TELA DE MENSAGEM
+========================== */
 
-    border: none;
+.message {
+    position: absolute;
 
-    border-radius: 8px;
+    inset: 0;
 
-    background: #263c70;
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background:
+        rgba(1, 10, 20, .72);
+
+    border-radius: 12px;
+
+    z-index: 10;
+}
+
+.hidden {
+    display: none;
+}
+
+.message-box {
+    width: min(500px, 90%);
+
+    padding: 35px 25px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #103b59,
+            #061522
+        );
+
+    border: 3px solid #5be4ff;
+
+    border-radius: 18px;
+
+    box-shadow:
+        0 0 35px rgba(0, 220, 255, .5);
+}
+
+.message-box h2 {
+    color: #a4efff;
+
+    font-size: 34px;
+
+    margin-bottom: 12px;
+}
+
+.message-box p {
+    color: #d3efff;
+
+    line-height: 1.5;
+
+    margin-bottom: 20px;
+}
+
+.message-box button {
+    padding: 12px 28px;
+
+    border: 0;
+
+    border-radius: 9px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #15a9dd,
+            #1471b4
+        );
 
     color: white;
+
+    font-size: 16px;
 
     font-weight: bold;
 
     cursor: pointer;
 
-    transition: 0.2s;
+    transition: .2s;
 }
 
-button:hover {
-    background: #385a9d;
-
+.message-box button:hover {
     transform: scale(1.05);
+
+    box-shadow:
+        0 0 15px #20d6ff;
 }
 
-button:active {
-    transform: scale(0.98);
-}
+
+/* ==========================
+   RESPONSIVO
+========================== */
 
 @media (max-width: 700px) {
 
-    body {
-        overflow: auto;
+    header h1 {
+        font-size: 30px;
     }
 
-    #controls {
+    .hud {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .stage-card {
+        grid-column: 1;
+    }
+
+    .banana-card {
+        grid-column: 2;
+    }
+
+    .controls {
         flex-direction: column;
-
-        gap: 5px;
     }
-
-    h1 {
-        font-size: 25px;
-    }
-
 }

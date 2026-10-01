@@ -1,21 +1,70 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-const restartButton = document.getElementById("restartButton");
 
-const WIDTH = canvas.width;
-const HEIGHT = canvas.height;
+/* =====================================================
+   CONFIGURAÇÃO
+===================================================== */
+
+const TILE = 40;
+
+const ROWS = 15;
+const COLS = 20;
+
+const WIDTH = COLS * TILE;
+const HEIGHT = ROWS * TILE;
+
+canvas.width = WIDTH;
+canvas.height = HEIGHT;
+
+const TOTAL_LEVELS = 10;
 
 
-/* =================================
+/* =====================================================
+   ELEMENTOS DA INTERFACE
+===================================================== */
+
+const lives1Element =
+    document.getElementById("lives1");
+
+const lives2Element =
+    document.getElementById("lives2");
+
+const score1Element =
+    document.getElementById("score1");
+
+const score2Element =
+    document.getElementById("score2");
+
+const levelElement =
+    document.getElementById("level");
+
+const bananasElement =
+    document.getElementById("bananas");
+
+const message =
+    document.getElementById("message");
+
+const messageTitle =
+    document.getElementById("messageTitle");
+
+const messageText =
+    document.getElementById("messageText");
+
+const messageButton =
+    document.getElementById("messageButton");
+
+
+/* =====================================================
    TECLADO
-================================= */
+===================================================== */
 
 const keys = {};
 
-window.addEventListener("keydown", function (event) {
+window.addEventListener("keydown", event => {
 
-    const key = event.key.toLowerCase();
+    const key =
+        event.key.toLowerCase();
 
     keys[key] = true;
 
@@ -26,334 +75,602 @@ window.addEventListener("keydown", function (event) {
         key === "arrowright" ||
         key === " "
     ) {
+
         event.preventDefault();
+
     }
 
     if (key === "r") {
-        restartGame();
+
+        restartEntireGame();
+
     }
-});
-
-
-window.addEventListener("keyup", function (event) {
-
-    keys[event.key.toLowerCase()] = false;
 
 });
 
 
-/* =================================
-   CONFIGURAÇÃO
-================================= */
+window.addEventListener("keyup", event => {
 
-const gravity = 0.45;
+    keys[event.key.toLowerCase()] =
+        false;
 
-const playerSpeed = 3.5;
-
-const jumpPower = -10;
+});
 
 
-/* =================================
-   JOGADORES
-================================= */
+/* =====================================================
+   FASES
+=====================================================
 
-let fire;
-let water;
+   # = parede
+   . = caminho
+   P = jogador
+   G = inimigo
+
+   Os mapas são diferentes em cada fase.
+===================================================== */
+
+const levels = [
+
+[
+"####################",
+"#P................G#",
+"#.####..####..####.#",
+"#..................#",
+"#.###.########.###.#",
+"#..................#",
+"#.###..######..###.#",
+"#......G...........#",
+"#.###..######..###.#",
+"#..................#",
+"#.###.########.###.#",
+"#..................#",
+"#.####..####..####.#",
+"#G................P#",
+"####################"
+],
+
+[
+"####################",
+"#P......#........G.#",
+"#.####..#..######..#",
+"#......##..........#",
+"###.############.#.#",
+"#..................#",
+"#..##############..#",
+"#......G...........#",
+"#..##############..#",
+"#..................#",
+"#.#.############.###",
+"#..................#",
+"#..######..######..#",
+"#G.................P",
+"####################"
+],
+
+[
+"####################",
+"#P.................#",
+"#.#####.#####.###..#",
+"#.....#.....#......#",
+"#.###.#.###.#.####.#",
+"#...#.#...#.#....#.#",
+"###.#.###.#.####.#.#",
+"#...#...G.#......#.#",
+"#.#######.######.#.#",
+"#.........#......#.#",
+"#.#########.####.#.#",
+"#.........#....#...#",
+"#.#######.####.###.#",
+"#G.................P",
+"####################"
+],
+
+[
+"####################",
+"#P..#........#....G#",
+"#...#..####..#.....#",
+"#.#....#..#....###.#",
+"#.####.#..####.....#",
+"#......#........#..#",
+"#.############.#...#",
+"#........G.........#",
+"#...#.############.#",
+"#...#..............#",
+"#.#####.##########.#",
+"#.......#..........#",
+"#.#####.#.########.#",
+"#G......#..........P",
+"####################"
+],
+
+[
+"####################",
+"#P........#........#",
+"#.######..#..######.#",
+"#......#..#..#......#",
+"####.#.#..#..#.###..#",
+"#....#........#.....#",
+"#.###############.#.#",
+"#......G...........#",
+"#.#.##############.#",
+"#.#.................#",
+"#.###########.#####.#",
+"#...........#.......#",
+"#.#########.#.#####.#",
+"#G..........#.......P",
+"####################"
+],
+
+[
+"####################",
+"#P....#...........G#",
+"#.##..#.##########.#",
+"#....#.............#",
+"#.###############..#",
+"#........G.........#",
+"###.##############.#",
+"#..................#",
+"#.#################.",
+"#..................#",
+"#.################.#",
+"#..................#",
+"#.################.#",
+"#G.................P",
+"####################"
+],
+
+[
+"####################",
+"#P.................#",
+"#.#####.##########.#",
+"#.....#............#",
+"#####.#.##########.#",
+"#.....#....G.......#",
+"#.##########.#######",
+"#..................#",
+"################.#.#",
+"#................#.#",
+"#.################.#",
+"#..................#",
+"#.##########.#####.#",
+"#G.................P",
+"####################"
+],
+
+[
+"####################",
+"#P..#........#....G#",
+"#...#..####..#.....#",
+"#.###..#..#..###.#.#",
+"#......#..#......#.#",
+"#.##############.#.#",
+"#................#.#",
+"#......G...........#",
+"#.#################",
+"#........#.........#",
+"#.######.#.#######.#",
+"#......#.#.........#",
+"#.####.#.#########.#",
+"#G.....#...........P",
+"####################"
+],
+
+[
+"####################",
+"#P........#........#",
+"#.#######.#.######.#",
+"#.......#.#........#",
+"#.#####.#.########.#",
+"#.#...#.#..........#",
+"#.#.#.#.############",
+"#...#.#....G.......#",
+"###.#.############.#",
+"#...#..............#",
+"#.################.#",
+"#..................#",
+"#.###############..#",
+"#G.................P",
+"####################"
+],
+
+[
+"####################",
+"#P.................#",
+"#.#####.#####.#####.#",
+"#.....#.....#.......#",
+"#####.#.###.#.#####.#",
+"#.....#...#.#.......#",
+"#.#######.#.#######.#",
+"#.......G...........#",
+"#.################.#",
+"#..................#",
+"#.##############.#.#",
+"#................#.#",
+"#.################.#",
+"#G.................P",
+"####################"
+]
+
+];
 
 
-function createPlayer(type, x, y) {
+/* =====================================================
+   ESTADO DO JOGO
+===================================================== */
+
+let currentLevel = 0;
+
+let players = [];
+
+let enemies = [];
+
+let bananas = [];
+
+let score1 = 0;
+
+let score2 = 0;
+
+let lives1 = 3;
+
+let lives2 = 3;
+
+let gameRunning = true;
+
+let levelTransition = false;
+
+
+/* =====================================================
+   JOGADOR
+===================================================== */
+
+function createPlayer(
+    x,
+    y,
+    color,
+    controls
+) {
 
     return {
 
-        type: type,
+        x,
+        y,
 
-        x: x,
-        y: y,
+        startX: x,
+        startY: y,
 
-        width: 28,
-        height: 38,
+        radius: 14,
 
-        velocityX: 0,
-        velocityY: 0,
+        speed: 2.8,
 
-        speed: playerSpeed,
+        color,
 
-        jump: jumpPower,
+        controls,
 
-        grounded: false,
+        angle: 0,
 
-        hasGem: false,
+        mouth: 0
 
-        finished: false
     };
+
 }
 
 
-/* =================================
-   PLATAFORMAS
-================================= */
+/* =====================================================
+   CARREGAR FASE
+===================================================== */
 
-const platforms = [
+function loadLevel() {
 
-    // chão
-    {
-        x: 0,
-        y: 490,
-        width: 960,
-        height: 50
-    },
+    players = [];
 
-    // esquerda
-    {
-        x: 20,
-        y: 400,
-        width: 220,
-        height: 20
-    },
+    enemies = [];
 
-    // centro
-    {
-        x: 300,
-        y: 420,
-        width: 180,
-        height: 20
-    },
+    bananas = [];
 
-    // superior esquerda
-    {
-        x: 80,
-        y: 300,
-        width: 180,
-        height: 20
-    },
-
-    // superior centro
-    {
-        x: 370,
-        y: 280,
-        width: 200,
-        height: 20
-    },
-
-    // direita
-    {
-        x: 650,
-        y: 390,
-        width: 250,
-        height: 20
-    },
-
-    // superior direita
-    {
-        x: 700,
-        y: 250,
-        width: 180,
-        height: 20
-    },
-
-    // plataforma alta
-    {
-        x: 480,
-        y: 140,
-        width: 180,
-        height: 20
-    },
-
-    // plataforma esquerda alta
-    {
-        x: 40,
-        y: 170,
-        width: 180,
-        height: 20
-    }
-];
+    levelTransition = false;
 
 
-/* =================================
-   PERIGOS
-================================= */
-
-const hazards = [
-
-    {
-        type: "water",
-        x: 240,
-        y: 470,
-        width: 100,
-        height: 20
-    },
-
-    {
-        type: "water",
-        x: 560,
-        y: 470,
-        width: 130,
-        height: 20
-    },
-
-    {
-        type: "fire",
-        x: 470,
-        y: 470,
-        width: 90,
-        height: 20
-    },
-
-    {
-        type: "fire",
-        x: 850,
-        y: 470,
-        width: 110,
-        height: 20
-    }
-];
+    const map =
+        levels[currentLevel];
 
 
-/* =================================
-   GEMAS
-================================= */
+    for (
+        let row = 0;
+        row < ROWS;
+        row++
+    ) {
 
-let gems;
+        for (
+            let col = 0;
+            col < COLS;
+            col++
+        ) {
+
+            const tile =
+                map[row][col];
+
+            const x =
+                col * TILE + TILE / 2;
+
+            const y =
+                row * TILE + TILE / 2;
 
 
-function createGems() {
+            /* jogadores */
 
-    return [
+            if (tile === "P") {
 
-        {
-            type: "fire",
+                if (
+                    players.length === 0
+                ) {
 
-            x: 160,
-            y: 270,
+                    players.push(
 
-            collected: false
-        },
+                        createPlayer(
+                            x,
+                            y,
+                            "#25d4ff",
+                            {
+                                up: "w",
+                                down: "s",
+                                left: "a",
+                                right: "d"
+                            }
+                        )
 
-        {
-            type: "water",
+                    );
 
-            x: 780,
-            y: 220,
+                }
 
-            collected: false
+                else {
+
+                    players.push(
+
+                        createPlayer(
+                            x,
+                            y,
+                            "#ff5db7",
+                            {
+                                up: "arrowup",
+                                down: "arrowdown",
+                                left: "arrowleft",
+                                right: "arrowright"
+                            }
+                        )
+
+                    );
+
+                }
+
+            }
+
+
+            /* inimigos */
+
+            if (tile === "G") {
+
+                enemies.push({
+
+                    x,
+                    y,
+
+                    startX: x,
+                    startY: y,
+
+                    radius: 13,
+
+                    speed:
+                        1.05 +
+                        currentLevel * 0.07,
+
+                    color:
+                        enemies.length % 2 === 0
+                            ? "#9b6cff"
+                            : "#ff675b",
+
+                    directionX: 0,
+                    directionY: 1,
+
+                    timer: 0
+
+                });
+
+            }
+
         }
 
-    ];
-}
-
-
-/* =================================
-   PORTAS
-================================= */
-
-const doors = [
-
-    {
-        type: "fire",
-
-        x: 30,
-        y: 350,
-
-        width: 45,
-        height: 50
-    },
-
-    {
-        type: "water",
-
-        x: 885,
-        y: 340,
-
-        width: 45,
-        height: 50
     }
 
-];
+
+    /*
+    Cria bananinhas em todos os caminhos
+    possíveis.
+    */
+
+    createBananas();
 
 
-/* =================================
-   ESTADO DO JOGO
-================================= */
+    updateHUD();
 
-let gameWon = false;
-
-
-/* =================================
-   REINICIAR
-================================= */
-
-function restartGame() {
-
-    fire = createPlayer(
-        "fire",
-        80,
-        350
-    );
-
-    water = createPlayer(
-        "water",
-        120,
-        350
-    );
-
-    gems = createGems();
-
-    gameWon = false;
 }
 
 
-restartButton.addEventListener(
-    "click",
-    restartGame
-);
+/* =====================================================
+   CRIAR BANANINHAS
+===================================================== */
 
-restartGame();
+function createBananas() {
+
+    const map =
+        levels[currentLevel];
 
 
-/* =================================
-   COLISÃO
-================================= */
+    for (
+        let row = 0;
+        row < ROWS;
+        row++
+    ) {
 
-function isColliding(a, b) {
+        for (
+            let col = 0;
+            col < COLS;
+            col++
+        ) {
+
+            if (
+                map[row][col] !== "#"
+            ) {
+
+                const x =
+                    col * TILE + TILE / 2;
+
+                const y =
+                    row * TILE + TILE / 2;
+
+
+                /*
+                Não coloca banana exatamente
+                sobre jogador ou inimigo.
+                */
+
+                let blocked = false;
+
+
+                for (const player of players) {
+
+                    if (
+                        Math.hypot(
+                            player.x - x,
+                            player.y - y
+                        ) < 25
+                    ) {
+
+                        blocked = true;
+
+                    }
+
+                }
+
+
+                for (const enemy of enemies) {
+
+                    if (
+                        Math.hypot(
+                            enemy.x - x,
+                            enemy.y - y
+                        ) < 25
+                    ) {
+
+                        blocked = true;
+
+                    }
+
+                }
+
+
+                if (!blocked) {
+
+                    bananas.push({
+
+                        x,
+                        y,
+
+                        collected: false,
+
+                        phase:
+                            Math.random() *
+                            Math.PI * 2
+
+                    });
+
+                }
+
+            }
+
+        }
+
+    }
+
+}
+
+
+/* =====================================================
+   PAREDE
+===================================================== */
+
+function isWall(row, col) {
+
+    if (
+        row < 0 ||
+        row >= ROWS ||
+        col < 0 ||
+        col >= COLS
+    ) {
+
+        return true;
+
+    }
+
 
     return (
-
-        a.x < b.x + b.width &&
-
-        a.x + a.width > b.x &&
-
-        a.y < b.y + b.height &&
-
-        a.y + a.height > b.y
-
+        levels[currentLevel][row][col]
+        === "#"
     );
+
 }
 
 
-/* =================================
-   MOVIMENTO HORIZONTAL
-================================= */
+/* =====================================================
+   PODE MOVER?
+===================================================== */
 
-function moveHorizontal(player) {
+function canMove(
+    x,
+    y,
+    radius
+) {
 
-    player.x += player.velocityX;
+    const left =
+        Math.floor(
+            (x - radius) / TILE
+        );
+
+    const right =
+        Math.floor(
+            (x + radius) / TILE
+        );
+
+    const top =
+        Math.floor(
+            (y - radius) / TILE
+        );
+
+    const bottom =
+        Math.floor(
+            (y + radius) / TILE
+        );
 
 
-    for (const platform of platforms) {
+    for (
+        let row = top;
+        row <= bottom;
+        row++
+    ) {
 
-        if (isColliding(player, platform)) {
+        for (
+            let col = left;
+            col <= right;
+            col++
+        ) {
 
-            if (player.velocityX > 0) {
+            if (
+                isWall(
+                    row,
+                    col
+                )
+            ) {
 
-                player.x =
-                    platform.x - player.width;
-
-            }
-
-            else if (player.velocityX < 0) {
-
-                player.x =
-                    platform.x + platform.width;
+                return false;
 
             }
 
@@ -362,57 +679,169 @@ function moveHorizontal(player) {
     }
 
 
-    if (player.x < 0) {
-
-        player.x = 0;
-
-    }
-
-
-    if (player.x + player.width > WIDTH) {
-
-        player.x =
-            WIDTH - player.width;
-
-    }
+    return true;
 
 }
 
 
-/* =================================
-   MOVIMENTO VERTICAL
-================================= */
+/* =====================================================
+   CONTROLE DO JOGADOR
+===================================================== */
 
-function moveVertical(player) {
+function updatePlayer(player) {
 
-    player.velocityY += gravity;
-
-    player.y += player.velocityY;
-
-    player.grounded = false;
+    let dx = 0;
+    let dy = 0;
 
 
-    for (const platform of platforms) {
+    if (
+        keys[player.controls.left]
+    ) {
 
-        if (isColliding(player, platform)) {
+        dx = -1;
 
-            if (player.velocityY > 0) {
+    }
 
-                player.y =
-                    platform.y - player.height;
+    if (
+        keys[player.controls.right]
+    ) {
 
-                player.velocityY = 0;
+        dx = 1;
 
-                player.grounded = true;
+    }
+
+    if (
+        keys[player.controls.up]
+    ) {
+
+        dy = -1;
+
+    }
+
+    if (
+        keys[player.controls.down]
+    ) {
+
+        dy = 1;
+
+    }
+
+
+    /*
+    Movimento diagonal normalizado.
+    */
+
+    if (
+        dx !== 0 &&
+        dy !== 0
+    ) {
+
+        dx *= 0.707;
+        dy *= 0.707;
+
+    }
+
+
+    const nextX =
+        player.x +
+        dx * player.speed;
+
+
+    const nextY =
+        player.y +
+        dy * player.speed;
+
+
+    if (
+        canMove(
+            nextX,
+            player.y,
+            player.radius
+        )
+    ) {
+
+        player.x = nextX;
+
+    }
+
+
+    if (
+        canMove(
+            player.x,
+            nextY,
+            player.radius
+        )
+    ) {
+
+        player.y = nextY;
+
+    }
+
+
+    if (
+        dx !== 0 ||
+        dy !== 0
+    ) {
+
+        player.angle =
+            Math.atan2(
+                dy,
+                dx
+            );
+
+    }
+
+
+    player.mouth += 0.18;
+
+}
+
+
+/* =====================================================
+   BANANINHAS
+===================================================== */
+
+function collectBananas(
+    player,
+    playerNumber
+) {
+
+    for (const banana of bananas) {
+
+        if (
+            banana.collected
+        ) {
+
+            continue;
+
+        }
+
+
+        const distance =
+            Math.hypot(
+                player.x - banana.x,
+                player.y - banana.y
+            );
+
+
+        if (
+            distance < 22
+        ) {
+
+            banana.collected = true;
+
+
+            if (
+                playerNumber === 1
+            ) {
+
+                score1 += 10;
 
             }
 
-            else if (player.velocityY < 0) {
+            else {
 
-                player.y =
-                    platform.y + platform.height;
-
-                player.velocityY = 0;
+                score2 += 10;
 
             }
 
@@ -420,275 +849,604 @@ function moveVertical(player) {
 
     }
 
+}
 
-    // caiu do mapa
 
-    if (player.y > HEIGHT + 100) {
+/* =====================================================
+   INIMIGOS
+===================================================== */
 
-        resetPlayer(player);
+function updateEnemies() {
+
+    for (const enemy of enemies) {
+
+        enemy.timer--;
+
+
+        /*
+        Encontra o jogador mais próximo.
+        */
+
+        let target =
+            players[0];
+
+
+        if (
+            players.length > 1
+        ) {
+
+            const distance1 =
+                Math.hypot(
+                    enemy.x - players[0].x,
+                    enemy.y - players[0].y
+                );
+
+
+            const distance2 =
+                Math.hypot(
+                    enemy.x - players[1].x,
+                    enemy.y - players[1].y
+                );
+
+
+            if (
+                distance2 < distance1
+            ) {
+
+                target =
+                    players[1];
+
+            }
+
+        }
+
+
+        /*
+        Troca de direção.
+        */
+
+        if (
+            enemy.timer <= 0
+        ) {
+
+            enemy.timer =
+                30 +
+                Math.random() * 60;
+
+
+            const horizontal =
+                Math.abs(
+                    target.x - enemy.x
+                );
+
+
+            const vertical =
+                Math.abs(
+                    target.y - enemy.y
+                );
+
+
+            if (
+                horizontal > vertical
+            ) {
+
+                enemy.directionX =
+                    target.x > enemy.x
+                        ? 1
+                        : -1;
+
+                enemy.directionY = 0;
+
+            }
+
+            else {
+
+                enemy.directionX = 0;
+
+                enemy.directionY =
+                    target.y > enemy.y
+                        ? 1
+                        : -1;
+
+            }
+
+
+            /*
+            Se a direção escolhida estiver
+            bloqueada, tenta outra.
+            */
+
+            const testX =
+                enemy.x +
+                enemy.directionX *
+                TILE;
+
+
+            const testY =
+                enemy.y +
+                enemy.directionY *
+                TILE;
+
+
+            if (
+                !canMove(
+                    testX,
+                    testY,
+                    enemy.radius
+                )
+            ) {
+
+                const directions = [
+
+                    {
+                        x: 1,
+                        y: 0
+                    },
+
+                    {
+                        x: -1,
+                        y: 0
+                    },
+
+                    {
+                        x: 0,
+                        y: 1
+                    },
+
+                    {
+                        x: 0,
+                        y: -1
+                    }
+
+                ];
+
+
+                const valid =
+                    directions.filter(
+                        direction =>
+
+                            canMove(
+                                enemy.x +
+                                direction.x *
+                                TILE,
+
+                                enemy.y +
+                                direction.y *
+                                TILE,
+
+                                enemy.radius
+                            )
+                    );
+
+
+                if (
+                    valid.length > 0
+                ) {
+
+                    const direction =
+                        valid[
+                            Math.floor(
+                                Math.random() *
+                                valid.length
+                            )
+                        ];
+
+
+                    enemy.directionX =
+                        direction.x;
+
+                    enemy.directionY =
+                        direction.y;
+
+                }
+
+            }
+
+        }
+
+
+        const nextX =
+            enemy.x +
+            enemy.directionX *
+            enemy.speed;
+
+
+        const nextY =
+            enemy.y +
+            enemy.directionY *
+            enemy.speed;
+
+
+        if (
+            canMove(
+                nextX,
+                enemy.y,
+                enemy.radius
+            )
+        ) {
+
+            enemy.x =
+                nextX;
+
+        }
+
+        else {
+
+            enemy.timer = 0;
+
+        }
+
+
+        if (
+            canMove(
+                enemy.x,
+                nextY,
+                enemy.radius
+            )
+        ) {
+
+            enemy.y =
+                nextY;
+
+        }
+
+        else {
+
+            enemy.timer = 0;
+
+        }
 
     }
 
 }
 
 
-/* =================================
-   RESET DO JOGADOR
-================================= */
+/* =====================================================
+   COLISÃO JOGADOR / INIMIGO
+===================================================== */
 
-function resetPlayer(player) {
+function checkEnemyCollisions() {
 
-    if (player.type === "fire") {
+    players.forEach(
+        (player, index) => {
 
-        player.x = 80;
-        player.y = 350;
+            for (
+                const enemy of enemies
+            ) {
+
+                const distance =
+                    Math.hypot(
+                        player.x - enemy.x,
+                        player.y - enemy.y
+                    );
+
+
+                if (
+                    distance <
+                    player.radius +
+                    enemy.radius
+                ) {
+
+                    loseLife(index);
+
+                    return;
+
+                }
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   PERDER VIDA
+===================================================== */
+
+function loseLife(playerIndex) {
+
+    if (
+        playerIndex === 0
+    ) {
+
+        lives1--;
 
     }
 
     else {
 
-        player.x = 120;
-        player.y = 350;
+        lives2--;
 
     }
 
-    player.velocityX = 0;
-    player.velocityY = 0;
+
+    /*
+    Se os dois ficaram sem vidas,
+    fim de jogo.
+    */
+
+    if (
+        lives1 <= 0 &&
+        lives2 <= 0
+    ) {
+
+        gameOver();
+
+        return;
+
+    }
+
+
+    /*
+    Reposiciona o jogador.
+    */
+
+    const player =
+        players[playerIndex];
+
+
+    player.x =
+        player.startX;
+
+    player.y =
+        player.startY;
+
+
+    /*
+    Reinicia os inimigos.
+    */
+
+    for (
+        const enemy of enemies
+    ) {
+
+        enemy.x =
+            enemy.startX;
+
+        enemy.y =
+            enemy.startY;
+
+    }
+
+
+    updateHUD();
+
 }
 
 
-/* =================================
-   CONTROLE DO FOGO
-================================= */
+/* =====================================================
+   VERIFICAR FIM DA FASE
+===================================================== */
 
-function controlFire() {
+function checkLevelComplete() {
 
-    fire.velocityX = 0;
-
-
-    if (keys["a"]) {
-
-        fire.velocityX =
-            -fire.speed;
-
-    }
-
-
-    if (keys["d"]) {
-
-        fire.velocityX =
-            fire.speed;
-
-    }
+    const remaining =
+        bananas.filter(
+            banana =>
+                !banana.collected
+        ).length;
 
 
     if (
-        keys["w"] &&
-        fire.grounded
+        remaining === 0 &&
+        !levelTransition
     ) {
 
-        fire.velocityY =
-            fire.jump;
-
-    }
-
-}
+        levelTransition = true;
 
 
-/* =================================
-   CONTROLE DA ÁGUA
-================================= */
+        /*
+        Última fase.
+        */
 
-function controlWater() {
+        if (
+            currentLevel ===
+            TOTAL_LEVELS - 1
+        ) {
 
-    water.velocityX = 0;
+            winGame();
 
-
-    if (keys["arrowleft"]) {
-
-        water.velocityX =
-            -water.speed;
-
-    }
-
-
-    if (keys["arrowright"]) {
-
-        water.velocityX =
-            water.speed;
-
-    }
-
-
-    if (
-        keys["arrowup"] &&
-        water.grounded
-    ) {
-
-        water.velocityY =
-            water.jump;
-
-    }
-
-}
-
-
-/* =================================
-   PERIGOS
-================================= */
-
-function checkHazards(player) {
-
-    for (const hazard of hazards) {
-
-        if (isColliding(player, hazard)) {
-
-            // Cada personagem morre
-            // ao tocar no elemento contrário.
-
-            if (player.type !== hazard.type) {
-
-                resetPlayer(player);
-
-                return;
-
-            }
+            return;
 
         }
 
+
+        showNextLevel();
+
     }
 
 }
 
 
-/* =================================
-   GEMAS
-================================= */
+/* =====================================================
+   PRÓXIMA FASE
+===================================================== */
 
-function checkGems(player) {
+function showNextLevel() {
 
-    for (const gem of gems) {
-
-        if (gem.collected) {
-            continue;
-        }
+    gameRunning = false;
 
 
-        const gemBox = {
+    message.classList.remove(
+        "hidden"
+    );
 
-            x: gem.x - 12,
 
-            y: gem.y - 12,
+    messageTitle.textContent =
+        `🎉 FASE ${currentLevel + 1} COMPLETA!`;
 
-            width: 24,
 
-            height: 24
+    messageText.textContent =
+        `Preparem-se para a fase ${
+            currentLevel + 2
+        }!`;
+
+
+    messageButton.textContent =
+        "Próxima fase";
+
+
+    messageButton.onclick =
+        () => {
+
+            currentLevel++;
+
+            message.classList.add(
+                "hidden"
+            );
+
+            gameRunning = true;
+
+            loadLevel();
 
         };
 
+}
 
-        if (
 
-            gem.type === player.type &&
+/* =====================================================
+   VITÓRIA FINAL
+===================================================== */
 
-            isColliding(player, gemBox)
+function winGame() {
 
-        ) {
+    gameRunning = false;
 
-            gem.collected = true;
 
-            player.hasGem = true;
+    message.classList.remove(
+        "hidden"
+    );
 
-        }
 
-    }
+    messageTitle.textContent =
+        "🏆 VOCÊS ZERARAM O JOGO!";
+
+
+    messageText.textContent =
+        `Parabéns! Vocês completaram as 10 fases e coletaram todas as bananinhas. Pontuação final: ${score1} x ${score2}.`;
+
+
+    messageButton.textContent =
+        "Jogar novamente";
+
+
+    messageButton.onclick =
+        restartEntireGame;
 
 }
 
 
-/* =================================
-   PORTAS
-================================= */
+/* =====================================================
+   GAME OVER
+===================================================== */
 
-function checkDoors(player) {
+function gameOver() {
 
-    for (const door of doors) {
-
-        if (
-
-            door.type === player.type &&
-
-            player.hasGem &&
-
-            isColliding(player, door)
-
-        ) {
-
-            player.finished = true;
-
-        }
-
-    }
-
-}
+    gameRunning = false;
 
 
-/* =================================
-   ATUALIZAR JOGO
-================================= */
-
-function update() {
-
-    if (gameWon) {
-        return;
-    }
+    message.classList.remove(
+        "hidden"
+    );
 
 
-    controlFire();
-
-    controlWater();
-
-
-    moveHorizontal(fire);
-
-    moveVertical(fire);
+    messageTitle.textContent =
+        "💥 GAME OVER";
 
 
-    moveHorizontal(water);
-
-    moveVertical(water);
-
-
-    checkHazards(fire);
-
-    checkHazards(water);
+    messageText.textContent =
+        `Os dois jogadores ficaram sem vidas. Pontuação: ${score1} x ${score2}.`;
 
 
-    checkGems(fire);
-
-    checkGems(water);
-
-
-    checkDoors(fire);
-
-    checkDoors(water);
+    messageButton.textContent =
+        "Tentar novamente";
 
 
-    if (
-        fire.finished &&
-        water.finished
-    ) {
-
-        gameWon = true;
-
-    }
+    messageButton.onclick =
+        restartEntireGame;
 
 }
 
 
-/* =================================
-   FUNDO
-================================= */
+/* =====================================================
+   REINICIAR TUDO
+===================================================== */
+
+function restartEntireGame() {
+
+    currentLevel = 0;
+
+    score1 = 0;
+
+    score2 = 0;
+
+    lives1 = 3;
+
+    lives2 = 3;
+
+    gameRunning = true;
+
+    levelTransition = false;
+
+
+    message.classList.add(
+        "hidden"
+    );
+
+
+    loadLevel();
+
+}
+
+
+/* =====================================================
+   HUD
+===================================================== */
+
+function updateHUD() {
+
+    lives1Element.textContent =
+        Math.max(
+            0,
+            lives1
+        );
+
+    lives2Element.textContent =
+        Math.max(
+            0,
+            lives2
+        );
+
+
+    score1Element.textContent =
+        score1;
+
+    score2Element.textContent =
+        score2;
+
+
+    levelElement.textContent =
+        `${currentLevel + 1} / ${TOTAL_LEVELS}`;
+
+
+    const remaining =
+        bananas.filter(
+            banana =>
+                !banana.collected
+        ).length;
+
+
+    bananasElement.textContent =
+        remaining;
+
+}
+
+
+/* =====================================================
+   DESENHAR FUNDO
+===================================================== */
 
 function drawBackground() {
 
@@ -703,16 +1461,18 @@ function drawBackground() {
 
     gradient.addColorStop(
         0,
-        "#18254a"
+        "#061b2e"
     );
 
     gradient.addColorStop(
         1,
-        "#080d1d"
+        "#020b14"
     );
 
 
-    ctx.fillStyle = gradient;
+    ctx.fillStyle =
+        gradient;
+
 
     ctx.fillRect(
         0,
@@ -722,23 +1482,27 @@ function drawBackground() {
     );
 
 
-    // estrelas
+    /*
+    Pequenas partículas de neve.
+    */
 
     ctx.fillStyle =
-        "rgba(255,255,255,.5)";
+        "rgba(180,240,255,.35)";
 
 
     for (
         let i = 0;
-        i < 70;
+        i < 90;
         i++
     ) {
 
         const x =
-            (i * 137) % WIDTH;
+            (i * 137) %
+            WIDTH;
 
         const y =
-            (i * 73) % 230;
+            (i * 73) %
+            HEIGHT;
 
 
         ctx.fillRect(
@@ -753,158 +1517,113 @@ function drawBackground() {
 }
 
 
-/* =================================
-   PLATAFORMAS
-================================= */
+/* =====================================================
+   DESENHAR LABIRINTO
+===================================================== */
 
-function drawPlatforms() {
+function drawMaze() {
 
-    for (const platform of platforms) {
-
-        const gradient =
-            ctx.createLinearGradient(
-                0,
-                platform.y,
-                0,
-                platform.y + platform.height
-            );
+    const map =
+        levels[currentLevel];
 
 
-        gradient.addColorStop(
-            0,
-            "#7189ba"
-        );
-
-        gradient.addColorStop(
-            1,
-            "#26395f"
-        );
-
-
-        ctx.fillStyle = gradient;
-
-
-        ctx.fillRect(
-            platform.x,
-            platform.y,
-            platform.width,
-            platform.height
-        );
-
-
-        ctx.fillStyle =
-            "#9db6e4";
-
-
-        ctx.fillRect(
-            platform.x,
-            platform.y,
-            platform.width,
-            4
-        );
-
-    }
-
-}
-
-
-/* =================================
-   PERIGOS
-================================= */
-
-function drawHazards() {
-
-    for (const hazard of hazards) {
-
-        if (hazard.type === "water") {
-
-            const gradient =
-                ctx.createLinearGradient(
-                    0,
-                    hazard.y,
-                    0,
-                    hazard.y + hazard.height
-                );
-
-
-            gradient.addColorStop(
-                0,
-                "#29ddff"
-            );
-
-            gradient.addColorStop(
-                1,
-                "#0755c7"
-            );
-
-
-            ctx.fillStyle = gradient;
-
-        }
-
-        else {
-
-            const gradient =
-                ctx.createLinearGradient(
-                    0,
-                    hazard.y,
-                    0,
-                    hazard.y + hazard.height
-                );
-
-
-            gradient.addColorStop(
-                0,
-                "#ffdf22"
-            );
-
-            gradient.addColorStop(
-                0.5,
-                "#ff4b18"
-            );
-
-            gradient.addColorStop(
-                1,
-                "#b30000"
-            );
-
-
-            ctx.fillStyle = gradient;
-
-        }
-
-
-        ctx.fillRect(
-            hazard.x,
-            hazard.y,
-            hazard.width,
-            hazard.height
-        );
-
-
-        // bolhas/chamas
-
-        ctx.fillStyle =
-            "rgba(255,255,255,.45)";
-
+    for (
+        let row = 0;
+        row < ROWS;
+        row++
+    ) {
 
         for (
-            let x = hazard.x + 8;
-            x < hazard.x + hazard.width;
-            x += 25
+            let col = 0;
+            col < COLS;
+            col++
         ) {
 
-            ctx.beginPath();
+            if (
+                map[row][col] !== "#"
+            ) {
 
-            ctx.arc(
-                x,
-                hazard.y + 7,
-                3,
+                continue;
+
+            }
+
+
+            const x =
+                col * TILE;
+
+            const y =
+                row * TILE;
+
+
+            const gradient =
+                ctx.createLinearGradient(
+                    x,
+                    y,
+                    x + TILE,
+                    y + TILE
+                );
+
+
+            gradient.addColorStop(
                 0,
-                Math.PI * 2
+                "#17769b"
             );
 
-            ctx.fill();
+            gradient.addColorStop(
+                .5,
+                "#0b486b"
+            );
+
+            gradient.addColorStop(
+                1,
+                "#062d4a"
+            );
+
+
+            ctx.fillStyle =
+                gradient;
+
+
+            ctx.fillRect(
+                x + 1,
+                y + 1,
+                TILE - 2,
+                TILE - 2
+            );
+
+
+            /*
+            Borda de gelo.
+            */
+
+            ctx.strokeStyle =
+                "#39c9ed";
+
+            ctx.lineWidth = 1;
+
+
+            ctx.strokeRect(
+                x + 4,
+                y + 4,
+                TILE - 8,
+                TILE - 8
+            );
+
+
+            /*
+            Brilho.
+            */
+
+            ctx.fillStyle =
+                "rgba(170,245,255,.13)";
+
+
+            ctx.fillRect(
+                x + 5,
+                y + 5,
+                TILE - 10,
+                5
+            );
 
         }
 
@@ -913,292 +1632,247 @@ function drawHazards() {
 }
 
 
-/* =================================
-   PORTAS
-================================= */
+/* =====================================================
+   DESENHAR BANANAS
+===================================================== */
 
-function drawDoors() {
+function drawBananas() {
 
-    for (const door of doors) {
+    for (
+        const banana of bananas
+    ) {
 
-        if (door.type === "fire") {
+        if (
+            banana.collected
+        ) {
 
-            ctx.fillStyle =
-                "#a83220";
-
-        }
-
-        else {
-
-            ctx.fillStyle =
-                "#1269a6";
-
-        }
-
-
-        ctx.fillRect(
-            door.x,
-            door.y,
-            door.width,
-            door.height
-        );
-
-
-        if (door.type === "fire") {
-
-            ctx.fillStyle =
-                "#ff633e";
-
-        }
-
-        else {
-
-            ctx.fillStyle =
-                "#48dfff";
-
-        }
-
-
-        ctx.fillRect(
-            door.x + 7,
-            door.y + 7,
-            door.width - 14,
-            door.height - 7
-        );
-
-
-        // maçaneta
-
-        ctx.fillStyle = "#fff";
-
-        ctx.beginPath();
-
-        ctx.arc(
-            door.x + door.width - 10,
-            door.y + door.height / 2,
-            3,
-            0,
-            Math.PI * 2
-        );
-
-        ctx.fill();
-
-    }
-
-}
-
-
-/* =================================
-   GEMAS
-================================= */
-
-function drawGems() {
-
-    for (const gem of gems) {
-
-        if (gem.collected) {
             continue;
+
         }
+
+
+        banana.phase += 0.04;
+
+
+        const floatY =
+            Math.sin(
+                banana.phase
+            ) * 2;
 
 
         ctx.save();
 
 
         ctx.translate(
-            gem.x,
-            gem.y
+            banana.x,
+            banana.y + floatY
         );
 
 
         ctx.rotate(
-            Math.PI / 4
+            -0.35
         );
 
-
-        if (gem.type === "fire") {
-
-            ctx.shadowColor =
-                "#ff4a21";
-
-            ctx.fillStyle =
-                "#ff4928";
-
-        }
-
-        else {
-
-            ctx.shadowColor =
-                "#25d9ff";
-
-            ctx.fillStyle =
-                "#25cfff";
-
-        }
-
-
-        ctx.shadowBlur = 20;
-
-
-        ctx.fillRect(
-            -9,
-            -9,
-            18,
-            18
-        );
-
-
-        ctx.restore();
-
-    }
-
-
-    ctx.shadowBlur = 0;
-
-}
-
-
-/* =================================
-   JOGADORES
-================================= */
-
-function drawPlayer(player) {
-
-    let color;
-    let glow;
-
-
-    if (player.type === "fire") {
-
-        color = "#ff4b26";
-
-        glow = "#ff2400";
-
-    }
-
-    else {
-
-        color = "#22cfff";
-
-        glow = "#009dff";
-
-    }
-
-
-    ctx.save();
-
-
-    ctx.shadowColor = glow;
-
-    ctx.shadowBlur = 15;
-
-
-    ctx.fillStyle = color;
-
-
-    // corpo
-
-    ctx.beginPath();
-
-    ctx.roundRect(
-        player.x,
-        player.y,
-        player.width,
-        player.height,
-        8
-    );
-
-    ctx.fill();
-
-
-    ctx.shadowBlur = 0;
-
-
-    // olhos
-
-    ctx.fillStyle = "#fff";
-
-
-    ctx.fillRect(
-        player.x + 6,
-        player.y + 8,
-        5,
-        7
-    );
-
-
-    ctx.fillRect(
-        player.x + 17,
-        player.y + 8,
-        5,
-        7
-    );
-
-
-    ctx.fillStyle = "#111";
-
-
-    ctx.fillRect(
-        player.x + 8,
-        player.y + 10,
-        2,
-        4
-    );
-
-
-    ctx.fillRect(
-        player.x + 19,
-        player.y + 10,
-        2,
-        4
-    );
-
-
-    // sorriso
-
-    ctx.strokeStyle = "#111";
-
-    ctx.lineWidth = 2;
-
-
-    ctx.beginPath();
-
-    ctx.arc(
-        player.x + player.width / 2,
-        player.y + 18,
-        7,
-        0.1,
-        Math.PI - 0.1
-    );
-
-    ctx.stroke();
-
-
-    // gema acima do jogador
-
-    if (player.hasGem) {
-
-        ctx.fillStyle =
-            "#ffe44c";
 
         ctx.shadowColor =
-            "#ffe44c";
+            "#ffe75b";
 
         ctx.shadowBlur = 12;
+
+
+        /*
+        Banana curva.
+        */
+
+        ctx.strokeStyle =
+            "#ffe34d";
+
+        ctx.lineWidth = 7;
+
+        ctx.lineCap =
+            "round";
 
 
         ctx.beginPath();
 
         ctx.arc(
-            player.x + player.width / 2,
-            player.y - 8,
-            5,
+            0,
+            0,
+            9,
+            0.4,
+            Math.PI * 1.45
+        );
+
+        ctx.stroke();
+
+
+        /*
+        Parte interna.
+        */
+
+        ctx.strokeStyle =
+            "#fff28a";
+
+        ctx.lineWidth = 2;
+
+
+        ctx.beginPath();
+
+        ctx.arc(
+            0,
+            0,
+            6,
+            0.4,
+            Math.PI * 1.45
+        );
+
+        ctx.stroke();
+
+
+        /*
+        Pontas.
+        */
+
+        ctx.fillStyle =
+            "#a67c16";
+
+
+        ctx.beginPath();
+
+        ctx.arc(
+            -7,
+            -5,
+            2,
             0,
             Math.PI * 2
         );
 
         ctx.fill();
 
+
+        ctx.beginPath();
+
+        ctx.arc(
+            7,
+            5,
+            2,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+
+
+        ctx.restore();
+
     }
+
+}
+
+
+/* =====================================================
+   DESENHAR JOGADOR
+===================================================== */
+
+function drawPlayer(player) {
+
+    ctx.save();
+
+
+    ctx.translate(
+        player.x,
+        player.y
+    );
+
+
+    ctx.rotate(
+        player.angle
+    );
+
+
+    ctx.shadowColor =
+        player.color;
+
+    ctx.shadowBlur = 18;
+
+
+    ctx.fillStyle =
+        player.color;
+
+
+    const mouth =
+        .18 +
+        Math.abs(
+            Math.sin(
+                player.mouth
+            )
+        ) * .20;
+
+
+    /*
+    Corpo estilo personagem de labirinto.
+    */
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        0,
+        0
+    );
+
+
+    ctx.arc(
+        0,
+        0,
+        player.radius,
+        mouth,
+        Math.PI * 2 - mouth
+    );
+
+
+    ctx.closePath();
+
+    ctx.fill();
+
+
+    /*
+    Olho.
+    */
+
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle =
+        "#ffffff";
+
+
+    ctx.beginPath();
+
+    ctx.arc(
+        5,
+        -7,
+        4,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+
+    ctx.fillStyle =
+        "#122235";
+
+
+    ctx.beginPath();
+
+    ctx.arc(
+        6,
+        -7,
+        2,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
 
 
     ctx.restore();
@@ -1206,173 +1880,248 @@ function drawPlayer(player) {
 }
 
 
-/* =================================
-   STATUS
-================================= */
+/* =====================================================
+   DESENHAR INIMIGO
+===================================================== */
 
-function drawStatus() {
+function drawEnemy(enemy) {
 
-    ctx.font =
-        "bold 17px Arial";
-
-
-    ctx.textAlign =
-        "left";
+    ctx.save();
 
 
-    ctx.fillStyle =
-        "#fff";
-
-
-    ctx.fillText(
-
-        "🔥 " +
-        (
-            fire.hasGem
-                ? "Gema ✓"
-                : "Pegue a gema"
-        ),
-
-        20,
-        30
-
+    ctx.translate(
+        enemy.x,
+        enemy.y
     );
-
-
-    ctx.textAlign =
-        "right";
-
-
-    ctx.fillText(
-
-        "💧 " +
-        (
-            water.hasGem
-                ? "Gema ✓"
-                : "Pegue a gema"
-        ),
-
-        WIDTH - 20,
-        30
-
-    );
-
-
-    ctx.textAlign =
-        "center";
-
-}
-
-
-/* =================================
-   VITÓRIA
-================================= */
-
-function drawWinScreen() {
-
-    if (!gameWon) {
-        return;
-    }
-
-
-    ctx.fillStyle =
-        "rgba(0,0,0,.75)";
-
-
-    ctx.fillRect(
-        0,
-        0,
-        WIDTH,
-        HEIGHT
-    );
-
-
-    ctx.textAlign =
-        "center";
 
 
     ctx.shadowColor =
-        "#00eaff";
+        enemy.color;
 
-    ctx.shadowBlur = 20;
+    ctx.shadowBlur = 15;
 
 
     ctx.fillStyle =
-        "#fff";
+        enemy.color;
 
 
-    ctx.font =
-        "bold 48px Arial";
+    /*
+    Cabeça.
+    */
 
+    ctx.beginPath();
 
-    ctx.fillText(
-        "🎉 VOCÊS VENCERAM!",
-        WIDTH / 2,
-        HEIGHT / 2 - 30
+    ctx.arc(
+        0,
+        -1,
+        enemy.radius,
+        Math.PI,
+        0
     );
+
+
+    /*
+    Base ondulada.
+    */
+
+    ctx.lineTo(
+        enemy.radius,
+        enemy.radius
+    );
+
+
+    ctx.lineTo(
+        enemy.radius * .5,
+        enemy.radius - 5
+    );
+
+
+    ctx.lineTo(
+        0,
+        enemy.radius
+    );
+
+
+    ctx.lineTo(
+        -enemy.radius * .5,
+        enemy.radius - 5
+    );
+
+
+    ctx.lineTo(
+        -enemy.radius,
+        enemy.radius
+    );
+
+
+    ctx.closePath();
+
+    ctx.fill();
 
 
     ctx.shadowBlur = 0;
 
 
-    ctx.font =
-        "22px Arial";
+    /*
+    Olhos.
+    */
+
+    ctx.fillStyle =
+        "#ffffff";
+
+
+    ctx.beginPath();
+
+    ctx.arc(
+        -5,
+        -3,
+        4,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.arc(
+        5,
+        -3,
+        4,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
 
 
     ctx.fillStyle =
-        "#d5eaff";
+        "#172033";
 
 
-    ctx.fillText(
-        "Fogo e Água chegaram às suas portas!",
-        WIDTH / 2,
-        HEIGHT / 2 + 15
+    ctx.beginPath();
+
+    ctx.arc(
+        -5,
+        -3,
+        2,
+        0,
+        Math.PI * 2
     );
 
-
-    ctx.font =
-        "18px Arial";
-
-
-    ctx.fillText(
-        "Pressione R para jogar novamente",
-        WIDTH / 2,
-        HEIGHT / 2 + 55
+    ctx.arc(
+        5,
+        -3,
+        2,
+        0,
+        Math.PI * 2
     );
+
+    ctx.fill();
+
+
+    ctx.restore();
 
 }
 
 
-/* =================================
-   LOOP DO JOGO
-================================= */
+/* =====================================================
+   DESENHAR TUDO
+===================================================== */
+
+function draw() {
+
+    drawBackground();
+
+    drawMaze();
+
+    drawBananas();
+
+
+    for (
+        const enemy of enemies
+    ) {
+
+        drawEnemy(enemy);
+
+    }
+
+
+    for (
+        const player of players
+    ) {
+
+        drawPlayer(player);
+
+    }
+
+}
+
+
+/* =====================================================
+   ATUALIZAÇÃO
+===================================================== */
+
+function update() {
+
+    if (!gameRunning) {
+
+        return;
+
+    }
+
+
+    updatePlayer(
+        players[0]
+    );
+
+    updatePlayer(
+        players[1]
+    );
+
+
+    collectBananas(
+        players[0],
+        1
+    );
+
+    collectBananas(
+        players[1],
+        2
+    );
+
+
+    updateEnemies();
+
+
+    checkEnemyCollisions();
+
+
+    checkLevelComplete();
+
+
+    updateHUD();
+
+}
+
+
+/* =====================================================
+   LOOP PRINCIPAL
+===================================================== */
 
 function gameLoop() {
 
     update();
 
-    drawBackground();
+    draw();
 
-    drawPlatforms();
-
-    drawHazards();
-
-    drawDoors();
-
-    drawGems();
-
-    drawPlayer(fire);
-
-    drawPlayer(water);
-
-    drawStatus();
-
-    drawWinScreen();
-
-
-    requestAnimationFrame(gameLoop);
+    requestAnimationFrame(
+        gameLoop
+    );
 
 }
 
+
+/* =====================================================
+   INICIAR
+===================================================== */
+
+restartEntireGame();
 
 gameLoop();
