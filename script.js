@@ -1,494 +1,1127 @@
-const canvas = document.getElementById("gameCanvas");
+const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-canvas.width = 960;
-canvas.height = 540;
-
-const message = document.getElementById("message");
-const startButton = document.getElementById("startButton");
+const screen = document.getElementById("screen");
+const playButton = document.getElementById("play");
 
 const keys = {};
 
-window.addEventListener("keydown", (e) => {
-    keys[e.key.toLowerCase()] = true;
-});
-
-window.addEventListener("keyup", (e) => {
-    keys[e.key.toLowerCase()] = false;
-});
-
-// ==========================================
-// JOGADORES
-// ==========================================
-
-const fire = {
-    x: 90,
-    y: 450,
-    width: 32,
-    height: 42,
-    speed: 4,
-    color: "#ff3b18",
-    gravity: 0.7,
-    velocityY: 0,
-    jumping: false
-};
-
-const water = {
-    x: 150,
-    y: 450,
-    width: 32,
-    height: 42,
-    speed: 4,
-    color: "#249cff",
-    gravity: 0.7,
-    velocityY: 0,
-    jumping: false
-};
-
-// ==========================================
-// MAPA
-// ==========================================
-
-const platforms = [
-    // chão
-    { x: 0, y: 500, width: 960, height: 40 },
-
-    // plataformas
-    { x: 40, y: 410, width: 180, height: 20 },
-    { x: 270, y: 350, width: 170, height: 20 },
-    { x: 500, y: 420, width: 180, height: 20 },
-    { x: 720, y: 330, width: 180, height: 20 },
-
-    { x: 120, y: 260, width: 160, height: 20 },
-    { x: 390, y: 220, width: 170, height: 20 },
-    { x: 650, y: 170, width: 160, height: 20 }
-];
-
-// ==========================================
-// PERIGOS
-// ==========================================
-
-const fireLava = [
-    { x: 230, y: 480, width: 80, height: 20 },
-    { x: 680, y: 480, width: 100, height: 20 }
-];
-
-const waterPools = [
-    { x: 440, y: 480, width: 90, height: 20 },
-    { x: 800, y: 480, width: 100, height: 20 }
-];
-
-// ==========================================
-// PORTAS
-// ==========================================
-
-const exitFire = {
-    x: 850,
-    y: 120,
-    width: 35,
-    height: 50
-};
-
-const exitWater = {
-    x: 895,
-    y: 120,
-    width: 35,
-    height: 50
-};
-
-let gameStarted = false;
+let gameRunning = false;
 let gameWon = false;
 
-// ==========================================
-// DESENHO
-// ==========================================
 
-function drawBackground() {
-    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+// =====================================================
+// TECLADO
+// =====================================================
 
-    gradient.addColorStop(0, "#161b35");
-    gradient.addColorStop(1, "#252525");
+document.addEventListener("keydown", function (event) {
 
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    keys[event.key.toLowerCase()] = true;
 
-    // estrelas/luzes
-    for (let i = 0; i < 35; i++) {
-        const x = (i * 97) % canvas.width;
-        const y = (i * 53) % 300;
-
-        ctx.fillStyle = "rgba(255,255,255,0.15)";
-        ctx.fillRect(x, y, 3, 3);
-    }
-}
-
-function drawPlatforms() {
-    platforms.forEach(platform => {
-        // pedra
-        ctx.fillStyle = "#514b48";
-        ctx.fillRect(
-            platform.x,
-            platform.y,
-            platform.width,
-            platform.height
-        );
-
-        // topo
-        ctx.fillStyle = "#77716c";
-        ctx.fillRect(
-            platform.x,
-            platform.y,
-            platform.width,
-            5
-        );
-
-        // detalhes
-        ctx.fillStyle = "#393634";
-
-        for (
-            let x = platform.x + 10;
-            x < platform.x + platform.width;
-            x += 30
-        ) {
-            ctx.fillRect(x, platform.y + 9, 15, 3);
-        }
-    });
-}
-
-function drawLava() {
-    fireLava.forEach(lava => {
-        ctx.fillStyle = "#d92808";
-        ctx.fillRect(lava.x, lava.y, lava.width, lava.height);
-
-        ctx.fillStyle = "#ff5b16";
-
-        for (let x = lava.x; x < lava.x + lava.width; x += 20) {
-            ctx.beginPath();
-            ctx.arc(x + 10, lava.y + 12, 8, 0, Math.PI * 2);
-            ctx.fill();
-        }
-    });
-}
-
-function drawWater() {
-    waterPools.forEach(pool => {
-        ctx.fillStyle = "#087bd1";
-        ctx.fillRect(pool.x, pool.y, pool.width, pool.height);
-
-        ctx.fillStyle = "#38b8ff";
-
-        for (let x = pool.x; x < pool.x + pool.width; x += 25) {
-            ctx.fillRect(x, pool.y + 5, 15, 3);
-        }
-    });
-}
-
-function drawExit(exit, color, symbol) {
-    ctx.fillStyle = "#111";
-    ctx.fillRect(exit.x, exit.y, exit.width, exit.height);
-
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 5;
-    ctx.strokeRect(exit.x, exit.y, exit.width, exit.height);
-
-    ctx.fillStyle = color;
-    ctx.font = "25px Arial";
-    ctx.textAlign = "center";
-    ctx.fillText(
-        symbol,
-        exit.x + exit.width / 2,
-        exit.y + 33
-    );
-}
-
-function drawFirePlayer() {
-    // sombra
-    ctx.fillStyle = "rgba(0,0,0,.4)";
-    ctx.fillRect(fire.x - 3, fire.y + 39, 38, 5);
-
-    // corpo
-    ctx.fillStyle = "#ff3b18";
-    ctx.fillRect(
-        fire.x,
-        fire.y + 10,
-        fire.width,
-        fire.height - 10
-    );
-
-    // cabeça
-    ctx.beginPath();
-    ctx.arc(
-        fire.x + 16,
-        fire.y + 10,
-        15,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fill();
-
-    // olhos
-    ctx.fillStyle = "white";
-    ctx.fillRect(fire.x + 7, fire.y + 7, 6, 6);
-    ctx.fillRect(fire.x + 20, fire.y + 7, 6, 6);
-
-    ctx.fillStyle = "#111";
-    ctx.fillRect(fire.x + 9, fire.y + 9, 3, 3);
-    ctx.fillRect(fire.x + 22, fire.y + 9, 3, 3);
-
-    // chama
-    ctx.fillStyle = "#ffb300";
-
-    ctx.beginPath();
-    ctx.moveTo(fire.x + 6, fire.y + 2);
-    ctx.lineTo(fire.x + 12, fire.y - 13);
-    ctx.lineTo(fire.x + 17, fire.y + 1);
-    ctx.lineTo(fire.x + 23, fire.y - 10);
-    ctx.lineTo(fire.x + 29, fire.y + 4);
-    ctx.closePath();
-    ctx.fill();
-}
-
-function drawWaterPlayer() {
-    // sombra
-    ctx.fillStyle = "rgba(0,0,0,.4)";
-    ctx.fillRect(water.x - 3, water.y + 39, 38, 5);
-
-    // corpo
-    ctx.fillStyle = "#249cff";
-    ctx.fillRect(
-        water.x,
-        water.y + 10,
-        water.width,
-        water.height - 10
-    );
-
-    // cabeça
-    ctx.beginPath();
-    ctx.arc(
-        water.x + 16,
-        water.y + 10,
-        15,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fill();
-
-    // olhos
-    ctx.fillStyle = "white";
-    ctx.fillRect(water.x + 7, water.y + 7, 6, 6);
-    ctx.fillRect(water.x + 20, water.y + 7, 6, 6);
-
-    ctx.fillStyle = "#111";
-    ctx.fillRect(water.x + 9, water.y + 9, 3, 3);
-    ctx.fillRect(water.x + 22, water.y + 9, 3, 3);
-
-    // gota
-    ctx.fillStyle = "#75d5ff";
-
-    ctx.beginPath();
-    ctx.moveTo(water.x + 16, water.y - 13);
-    ctx.quadraticCurveTo(
-        water.x + 5,
-        water.y,
-        water.x + 16,
-        water.y + 4
-    );
-    ctx.quadraticCurveTo(
-        water.x + 27,
-        water.y,
-        water.x + 16,
-        water.y - 13
-    );
-    ctx.fill();
-}
-
-// ==========================================
-// FÍSICA
-// ==========================================
-
-function isOnPlatform(player) {
-    for (const platform of platforms) {
-        const bottom = player.y + player.height;
-
-        if (
-            bottom >= platform.y - 3 &&
-            bottom <= platform.y + 12 &&
-            player.x + player.width > platform.x &&
-            player.x < platform.x + platform.width
-        ) {
-            return platform;
-        }
+    if (
+        event.key === "ArrowUp" ||
+        event.key === "ArrowDown" ||
+        event.key === "ArrowLeft" ||
+        event.key === "ArrowRight"
+    ) {
+        event.preventDefault();
     }
 
-    return null;
+});
+
+document.addEventListener("keyup", function (event) {
+
+    keys[event.key.toLowerCase()] = false;
+
+});
+
+
+// =====================================================
+// JOGADORES
+// =====================================================
+
+const fire = {
+
+    x: 70,
+    y: 500,
+
+    width: 30,
+    height: 40,
+
+    speed: 4,
+
+    velocityY: 0,
+
+    jumpPower: -12,
+
+    grounded: false
+
+};
+
+
+const water = {
+
+    x: 120,
+    y: 500,
+
+    width: 30,
+    height: 40,
+
+    speed: 4,
+
+    velocityY: 0,
+
+    jumpPower: -12,
+
+    grounded: false
+
+};
+
+
+// =====================================================
+// MAPA
+// =====================================================
+
+const platforms = [
+
+    // chão
+    {
+        x: 0,
+        y: 560,
+        width: 1000,
+        height: 40
+    },
+
+    // plataformas
+    {
+        x: 50,
+        y: 470,
+        width: 190,
+        height: 20
+    },
+
+    {
+        x: 310,
+        y: 410,
+        width: 180,
+        height: 20
+    },
+
+    {
+        x: 560,
+        y: 470,
+        width: 170,
+        height: 20
+    },
+
+    {
+        x: 790,
+        y: 390,
+        width: 160,
+        height: 20
+    },
+
+    {
+        x: 110,
+        y: 320,
+        width: 180,
+        height: 20
+    },
+
+    {
+        x: 400,
+        y: 270,
+        width: 180,
+        height: 20
+    },
+
+    {
+        x: 680,
+        y: 220,
+        width: 190,
+        height: 20
+    },
+
+    {
+        x: 850,
+        y: 120,
+        width: 120,
+        height: 20
+    }
+
+];
+
+
+// =====================================================
+// LAVA
+// =====================================================
+
+const lava = [
+
+    {
+        x: 240,
+        y: 540,
+        width: 120,
+        height: 20
+    },
+
+    {
+        x: 700,
+        y: 540,
+        width: 140,
+        height: 20
+    }
+
+];
+
+
+// =====================================================
+// ÁGUA
+// =====================================================
+
+const water = [
+
+    {
+        x: 360,
+        y: 540,
+        width: 120,
+        height: 20
+    },
+
+    {
+        x: 840,
+        y: 540,
+        width: 120,
+        height: 20
+    }
+
+];
+
+
+// =====================================================
+// PORTAS
+// =====================================================
+
+const fireDoor = {
+
+    x: 870,
+    y: 65,
+
+    width: 35,
+    height: 55
+
+};
+
+
+const waterDoor = {
+
+    x: 920,
+    y: 65,
+
+    width: 35,
+    height: 55
+
+};
+
+
+// =====================================================
+// COLISÃO
+// =====================================================
+
+function collision(a, b) {
+
+    return (
+
+        a.x < b.x + b.width &&
+
+        a.x + a.width > b.x &&
+
+        a.y < b.y + b.height &&
+
+        a.y + a.height > b.y
+
+    );
+
 }
 
-function movePlayer(player, controls) {
+
+// =====================================================
+// MOVIMENTO
+// =====================================================
+
+function updatePlayer(player, controls) {
+
+    const oldY = player.y;
+
+
+    // -----------------------------------------
+    // MOVIMENTO HORIZONTAL
+    // -----------------------------------------
+
     if (keys[controls.left]) {
+
         player.x -= player.speed;
+
     }
 
     if (keys[controls.right]) {
+
         player.x += player.speed;
+
     }
 
-    player.x = Math.max(
-        0,
-        Math.min(canvas.width - player.width, player.x)
-    );
 
-    const platform = isOnPlatform(player);
+    // limites
 
-    if (platform) {
-        player.y = platform.y - player.height;
-        player.velocityY = 0;
-        player.jumping = false;
-    } else {
-        player.velocityY += player.gravity;
-        player.y += player.velocityY;
-        player.jumping = true;
+    if (player.x < 0) {
+
+        player.x = 0;
+
     }
+
+    if (player.x + player.width > canvas.width) {
+
+        player.x =
+            canvas.width - player.width;
+
+    }
+
+
+    // -----------------------------------------
+    // PULO
+    // -----------------------------------------
 
     if (
         keys[controls.jump] &&
-        !player.jumping
+        player.grounded
     ) {
-        player.velocityY = -13;
-        player.jumping = true;
+
+        player.velocityY =
+            player.jumpPower;
+
+        player.grounded = false;
+
     }
 
-    if (player.y > canvas.height + 100) {
-        resetPlayer(player);
+
+    // -----------------------------------------
+    // GRAVIDADE
+    // -----------------------------------------
+
+    player.velocityY += 0.6;
+
+    if (player.velocityY > 12) {
+
+        player.velocityY = 12;
+
     }
+
+    player.y += player.velocityY;
+
+
+    // -----------------------------------------
+    // COLISÃO COM PLATAFORMAS
+    // -----------------------------------------
+
+    player.grounded = false;
+
+    for (const platform of platforms) {
+
+        const horizontal =
+            player.x + player.width > platform.x &&
+            player.x < platform.x + platform.width;
+
+        const falling =
+            player.velocityY >= 0;
+
+        const crossed =
+            oldY + player.height <= platform.y &&
+            player.y + player.height >= platform.y;
+
+        if (
+            horizontal &&
+            falling &&
+            crossed
+        ) {
+
+            player.y =
+                platform.y - player.height;
+
+            player.velocityY = 0;
+
+            player.grounded = true;
+
+        }
+
+    }
+
+
+    // -----------------------------------------
+    // CAIR
+    // -----------------------------------------
+
+    if (player.y > canvas.height + 50) {
+
+        resetPlayer(player);
+
+    }
+
 }
+
+
+// =====================================================
+// RESET
+// =====================================================
 
 function resetPlayer(player) {
-    if (player === fire) {
-        player.x = 90;
-        player.y = 450;
-    } else {
-        player.x = 150;
-        player.y = 450;
-    }
 
     player.velocityY = 0;
+
+    player.grounded = false;
+
+    if (player === fire) {
+
+        player.x = 70;
+        player.y = 500;
+
+    } else {
+
+        player.x = 120;
+        player.y = 500;
+
+    }
+
 }
 
-function touching(a, b) {
-    return (
-        a.x < b.x + b.width &&
-        a.x + a.width > b.x &&
-        a.y < b.y + b.height &&
-        a.y + a.height > b.y
-    );
-}
+
+// =====================================================
+// PERIGOS
+// =====================================================
 
 function checkHazards() {
-    fireLava.forEach(lava => {
-        if (touching(fire, lava)) {
-            resetPlayer(fire);
-        }
-    });
-
-    waterPools.forEach(pool => {
-        if (touching(water, pool)) {
-            resetPlayer(water);
-        }
-    });
-
-    // Água não pode tocar na lava
-    fireLava.forEach(lava => {
-        if (touching(water, lava)) {
-            resetPlayer(water);
-        }
-    });
 
     // Fogo não pode tocar na água
-    waterPools.forEach(pool => {
-        if (touching(fire, pool)) {
+
+    for (const pool of water) {
+
+        if (collision(fire, pool)) {
+
             resetPlayer(fire);
+
         }
-    });
+
+    }
+
+
+    // Água não pode tocar na lava
+
+    for (const pool of lava) {
+
+        if (collision(water, pool)) {
+
+            resetPlayer(water);
+
+        }
+
+    }
+
+
+    // Qualquer personagem que cair na lava/água errada
+
+    for (const pool of lava) {
+
+        if (collision(fire, pool)) {
+
+            // fogo pode ficar na lava
+            // então não faz nada
+
+        }
+
+    }
+
+
+    for (const pool of water) {
+
+        if (collision(water, pool)) {
+
+            // água pode ficar na água
+            // então não faz nada
+
+        }
+
+    }
+
 }
+
+
+// =====================================================
+// VITÓRIA
+// =====================================================
 
 function checkWin() {
+
+    const fireFinished =
+        collision(fire, fireDoor);
+
+    const waterFinished =
+        collision(water, waterDoor);
+
+
     if (
-        touching(fire, exitFire) &&
-        touching(water, exitWater)
+        fireFinished &&
+        waterFinished
     ) {
+
         gameWon = true;
 
-        message.style.display = "flex";
+        gameRunning = false;
 
-        message.querySelector("h1").textContent =
-            "🎉 VOCÊS VENCERAM!";
+        screen.style.display = "flex";
 
-        message.querySelector("p").textContent =
-            "Os dois jogadores chegaram à saída!";
+        screen.innerHTML = `
+            <h1>🎉 VOCÊS VENCERAM!</h1>
 
-        startButton.textContent = "JOGAR NOVAMENTE";
+            <p>
+                Fogo e Água chegaram às suas portas!
+            </p>
+
+            <button id="restart">
+                JOGAR NOVAMENTE
+            </button>
+        `;
+
+
+        document
+            .getElementById("restart")
+            .addEventListener(
+                "click",
+                startGame
+            );
+
     }
+
 }
 
-// ==========================================
-// LOOP DO JOGO
-// ==========================================
 
-function update() {
-    if (!gameStarted || gameWon) {
-        return;
+// =====================================================
+// DESENHO DO FUNDO
+// =====================================================
+
+function drawBackground() {
+
+    const gradient =
+        ctx.createLinearGradient(
+            0,
+            0,
+            0,
+            canvas.height
+        );
+
+    gradient.addColorStop(
+        0,
+        "#111a38"
+    );
+
+    gradient.addColorStop(
+        1,
+        "#080b18"
+    );
+
+    ctx.fillStyle = gradient;
+
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+
+    // pedras no fundo
+
+    ctx.fillStyle =
+        "rgba(100,120,170,0.08)";
+
+    for (
+        let x = 0;
+        x < canvas.width;
+        x += 80
+    ) {
+
+        ctx.fillRect(
+            x,
+            100,
+            2,
+            400
+        );
+
     }
 
-    movePlayer(fire, {
-        left: "a",
-        right: "d",
-        jump: "w"
-    });
-
-    movePlayer(water, {
-        left: "arrowleft",
-        right: "arrowright",
-        jump: "arrowup"
-    });
-
-    checkHazards();
-    checkWin();
 }
+
+
+// =====================================================
+// DESENHAR PLATAFORMAS
+// =====================================================
+
+function drawPlatforms() {
+
+    for (const p of platforms) {
+
+        // pedra
+
+        ctx.fillStyle =
+            "#454b5c";
+
+        ctx.fillRect(
+            p.x,
+            p.y,
+            p.width,
+            p.height
+        );
+
+
+        // topo
+
+        ctx.fillStyle =
+            "#737b91";
+
+        ctx.fillRect(
+            p.x,
+            p.y,
+            p.width,
+            5
+        );
+
+
+        // detalhes
+
+        ctx.strokeStyle =
+            "#303646";
+
+        ctx.lineWidth = 2;
+
+        for (
+            let x = p.x + 15;
+            x < p.x + p.width;
+            x += 35
+        ) {
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                x,
+                p.y + 7
+            );
+
+            ctx.lineTo(
+                x + 10,
+                p.y + 16
+            );
+
+            ctx.stroke();
+
+        }
+
+    }
+
+}
+
+
+// =====================================================
+// DESENHAR LAVA
+// =====================================================
+
+function drawLava() {
+
+    for (const p of lava) {
+
+        const gradient =
+            ctx.createLinearGradient(
+                0,
+                p.y,
+                0,
+                p.y + p.height
+            );
+
+        gradient.addColorStop(
+            0,
+            "#ff9d00"
+        );
+
+        gradient.addColorStop(
+            0.5,
+            "#ff3c00"
+        );
+
+        gradient.addColorStop(
+            1,
+            "#a50000"
+        );
+
+        ctx.fillStyle = gradient;
+
+        ctx.fillRect(
+            p.x,
+            p.y,
+            p.width,
+            p.height
+        );
+
+
+        // bolhas
+
+        ctx.fillStyle =
+            "#ffd000";
+
+        for (
+            let x = p.x + 10;
+            x < p.x + p.width;
+            x += 25
+        ) {
+
+            ctx.beginPath();
+
+            ctx.arc(
+                x,
+                p.y + 7,
+                5,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fill();
+
+        }
+
+    }
+
+}
+
+
+// =====================================================
+// DESENHAR ÁGUA
+// =====================================================
+
+function drawWater() {
+
+    for (const p of water) {
+
+        const gradient =
+            ctx.createLinearGradient(
+                0,
+                p.y,
+                0,
+                p.y + p.height
+            );
+
+        gradient.addColorStop(
+            0,
+            "#4de4ff"
+        );
+
+        gradient.addColorStop(
+            0.5,
+            "#087bd9"
+        );
+
+        gradient.addColorStop(
+            1,
+            "#034b99"
+        );
+
+        ctx.fillStyle = gradient;
+
+        ctx.fillRect(
+            p.x,
+            p.y,
+            p.width,
+            p.height
+        );
+
+
+        ctx.strokeStyle =
+            "rgba(255,255,255,.5)";
+
+        ctx.lineWidth = 2;
+
+        for (
+            let x = p.x;
+            x < p.x + p.width;
+            x += 30
+        ) {
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                x,
+                p.y + 8
+            );
+
+            ctx.quadraticCurveTo(
+                x + 7,
+                p.y,
+                x + 15,
+                p.y + 8
+            );
+
+            ctx.stroke();
+
+        }
+
+    }
+
+}
+
+
+// =====================================================
+// DESENHAR PORTAS
+// =====================================================
+
+function drawDoor(door, color, symbol) {
+
+    ctx.fillStyle =
+        "#151927";
+
+    ctx.fillRect(
+        door.x,
+        door.y,
+        door.width,
+        door.height
+    );
+
+
+    ctx.strokeStyle =
+        color;
+
+    ctx.lineWidth = 4;
+
+    ctx.strokeRect(
+        door.x,
+        door.y,
+        door.width,
+        door.height
+    );
+
+
+    ctx.font = "23px Arial";
+
+    ctx.textAlign = "center";
+
+    ctx.fillText(
+        symbol,
+        door.x + door.width / 2,
+        door.y + 35
+    );
+
+}
+
+
+// =====================================================
+// DESENHAR FOGO
+// =====================================================
+
+function drawFire() {
+
+    // brilho
+
+    ctx.shadowBlur = 15;
+
+    ctx.shadowColor =
+        "#ff3000";
+
+
+    // corpo
+
+    ctx.fillStyle =
+        "#e83316";
+
+    ctx.fillRect(
+        fire.x,
+        fire.y + 12,
+        fire.width,
+        28
+    );
+
+
+    // cabeça
+
+    ctx.beginPath();
+
+    ctx.arc(
+        fire.x + 15,
+        fire.y + 12,
+        14,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+
+    // chama
+
+    ctx.fillStyle =
+        "#ffb000";
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        fire.x + 6,
+        fire.y + 5
+    );
+
+    ctx.lineTo(
+        fire.x + 10,
+        fire.y - 10
+    );
+
+    ctx.lineTo(
+        fire.x + 16,
+        fire.y + 3
+    );
+
+    ctx.lineTo(
+        fire.x + 23,
+        fire.y - 8
+    );
+
+    ctx.lineTo(
+        fire.x + 27,
+        fire.y + 7
+    );
+
+    ctx.closePath();
+
+    ctx.fill();
+
+
+    // olhos
+
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle =
+        "white";
+
+    ctx.fillRect(
+        fire.x + 7,
+        fire.y + 9,
+        5,
+        5
+    );
+
+    ctx.fillRect(
+        fire.x + 19,
+        fire.y + 9,
+        5,
+        5
+    );
+
+}
+
+
+// =====================================================
+// DESENHAR ÁGUA
+// =====================================================
+
+function drawWaterPlayer() {
+
+    ctx.shadowBlur = 15;
+
+    ctx.shadowColor =
+        "#00aaff";
+
+
+    // corpo
+
+    ctx.fillStyle =
+        "#138ce0";
+
+    ctx.fillRect(
+        water.x,
+        water.y + 12,
+        water.width,
+        28
+    );
+
+
+    // cabeça
+
+    ctx.beginPath();
+
+    ctx.arc(
+        water.x + 15,
+        water.y + 12,
+        14,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+
+    // gota
+
+    ctx.fillStyle =
+        "#72eaff";
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        water.x + 15,
+        water.y - 10
+    );
+
+    ctx.lineTo(
+        water.x + 7,
+        water.y + 3
+    );
+
+    ctx.lineTo(
+        water.x + 15,
+        water.y + 9
+    );
+
+    ctx.lineTo(
+        water.x + 23,
+        water.y + 3
+    );
+
+    ctx.closePath();
+
+    ctx.fill();
+
+
+    // olhos
+
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle =
+        "white";
+
+    ctx.fillRect(
+        water.x + 7,
+        water.y + 9,
+        5,
+        5
+    );
+
+    ctx.fillRect(
+        water.x + 19,
+        water.y + 9,
+        5,
+        5
+    );
+
+}
+
+
+// =====================================================
+// DESENHAR TUDO
+// =====================================================
 
 function draw() {
+
     drawBackground();
+
     drawPlatforms();
+
     drawLava();
+
     drawWater();
 
-    drawExit(exitFire, "#ff3b18", "🔥");
-    drawExit(exitWater, "#249cff", "💧");
+    drawDoor(
+        fireDoor,
+        "#ff3b18",
+        "🔥"
+    );
 
-    drawFirePlayer();
+    drawDoor(
+        waterDoor,
+        "#22aaff",
+        "💧"
+    );
+
+    drawFire();
+
     drawWaterPlayer();
+
 }
 
+
+// =====================================================
+// LOOP
+// =====================================================
+
 function gameLoop() {
-    update();
+
+    if (gameRunning) {
+
+        updatePlayer(
+            fire,
+            {
+                left: "a",
+                right: "d",
+                jump: "w"
+            }
+        );
+
+
+        updatePlayer(
+            water,
+            {
+                left: "arrowleft",
+                right: "arrowright",
+                jump: "arrowup"
+            }
+        );
+
+
+        checkHazards();
+
+        checkWin();
+
+    }
+
+
     draw();
 
     requestAnimationFrame(gameLoop);
+
 }
 
-// ==========================================
+
+// =====================================================
 // INICIAR
-// ==========================================
+// =====================================================
 
-startButton.addEventListener("click", () => {
-    gameStarted = true;
+function startGame() {
+
+    fire.x = 70;
+    fire.y = 500;
+    fire.velocityY = 0;
+    fire.grounded = false;
+
+    water.x = 120;
+    water.y = 500;
+    water.velocityY = 0;
+    water.grounded = false;
+
+
     gameWon = false;
+    gameRunning = true;
 
-    message.style.display = "none";
 
-    resetPlayer(fire);
-    resetPlayer(water);
-});
+    screen.style.display = "none";
+}
+
+
+playButton.addEventListener(
+    "click",
+    startGame
+);
+
+
+// COMEÇAR LOOP
 
 gameLoop();
