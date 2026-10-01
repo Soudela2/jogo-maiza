@@ -4,98 +4,143 @@
 
 body {
     margin: 0;
-    background:
-        radial-gradient(circle at top, #202b50, #080b18);
-    color: white;
-    font-family: Arial, sans-serif;
-    text-align: center;
     min-height: 100vh;
+
+    background:
+        radial-gradient(circle at top, #29366f, #080b19);
+
+    color: white;
+
+    font-family: Arial, sans-serif;
+
+    text-align: center;
 }
 
-.game-wrapper {
+.game-container {
     width: 100%;
     max-width: 1050px;
+
     margin: auto;
+
     padding: 15px;
 }
 
 h1 {
     margin: 5px 0 10px;
-    font-size: 32px;
+
+    font-size: 34px;
+
+    text-shadow:
+        0 0 10px #6d7cff;
 }
 
-.info {
+.topbar {
     display: flex;
+
     justify-content: center;
+
     gap: 25px;
+
     flex-wrap: wrap;
-    margin-bottom: 12px;
+
+    margin-bottom: 10px;
+
     font-weight: bold;
+
+    font-size: 16px;
 }
 
-canvas {
+#game {
     width: 100%;
     max-width: 1000px;
+
     height: auto;
 
-    background:
-        linear-gradient(#182044, #10152b);
+    display: block;
 
-    border: 5px solid #5969b8;
+    margin: auto;
+
+    border: 5px solid #6677d8;
+
     border-radius: 15px;
 
+    background: #10152d;
+
     box-shadow:
-        0 0 30px rgba(75, 100, 255, 0.4);
+        0 0 30px rgba(79, 99, 255, 0.5);
+}
+
+.message {
+    min-height: 30px;
+
+    margin-top: 8px;
+
+    font-size: 20px;
+
+    font-weight: bold;
+
+    color: #ffe85b;
 }
 
 button {
     border: none;
+
     border-radius: 12px;
+
     padding: 12px 20px;
+
     margin: 5px;
-    background: #343d73;
+
     color: white;
+
+    background: #39447f;
+
     font-size: 20px;
+
     font-weight: bold;
+
     cursor: pointer;
+
+    touch-action: none;
+}
+
+button:hover {
+    background: #5262b0;
 }
 
 button:active {
     transform: scale(0.92);
-    background: #5664b5;
 }
 
 #restart {
-    margin-top: 15px;
-    background: #e34b4b;
+    background: #e34848;
+
+    margin-top: 10px;
 }
 
 .mobile-controls {
     display: none;
+
     justify-content: space-around;
-    margin-top: 15px;
+
+    gap: 20px;
+
+    margin-top: 12px;
 }
 
-.control-player {
-    background: rgba(255,255,255,0.08);
-    padding: 8px;
-    border-radius: 15px;
+.mobile-controls h3 {
+    margin: 4px;
 }
-
-.control-player h3 {
-    margin: 5px;
-}
-
-/* Celular */
 
 @media (max-width: 700px) {
 
     h1 {
-        font-size: 24px;
+        font-size: 25px;
     }
 
-    .info {
+    .topbar {
         font-size: 12px;
+
         gap: 8px;
     }
 
@@ -103,11 +148,10 @@ button:active {
         display: flex;
     }
 
-    .control-player button {
-        width: 55px;
-        height: 50px;
-        padding: 0;
-        font-size: 20px;
-    }
+    .mobile-controls button {
+        width: 58px;
+        height: 52px;
 
+        padding: 0;
+    }
 }

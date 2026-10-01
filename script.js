@@ -1,625 +1,763 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
+const levelText = document.getElementById("levelText");
+const message = document.getElementById("message");
+
 const WIDTH = canvas.width;
 const HEIGHT = canvas.height;
 
-const keys = {};
-
-document.addEventListener("keydown", (e) => {
-    keys[e.code] = true;
-
-    // Evita a página rolar quando apertar as setas
-    if (
-        e.code === "ArrowUp" ||
-        e.code === "ArrowDown" ||
-        e.code === "ArrowLeft" ||
-        e.code === "ArrowRight" ||
-        e.code === "Space"
-    ) {
-        e.preventDefault();
-    }
-});
-
-document.addEventListener("keyup", (e) => {
-    keys[e.code] = false;
-});
-
-/* =========================
-   JOGADORES
-========================= */
-
-const fire = {
-    x: 80,
-    y: 470,
-    width: 35,
-    height: 45,
-
-    color: "#ff4b21",
-
-    vx: 0,
-    vy: 0,
-
-    speed: 4,
-    jump: -12,
-
-    grounded: false,
-
-    dead: false,
-    finished: false
-};
-
-const water = {
-    x: 140,
-    y: 470,
-    width: 35,
-    height: 45,
-
-    color: "#27a9ff",
-
-    vx: 0,
-    vy: 0,
-
-    speed: 4,
-    jump: -12,
-
-    grounded: false,
-
-    dead: false,
-    finished: false
-};
-
-/* =========================
-   FÍSICA
-========================= */
-
 const gravity = 0.55;
 
-/* =========================
-   PLATAFORMAS
-========================= */
+const keys = {};
 
-const platforms = [
+let currentLevel = 0;
 
-    // chão
-    {
-        x: 0,
-        y: 550,
-        width: 1000,
-        height: 50
-    },
+let gameState = "playing";
 
-    // plataforma esquerda
-    {
-        x: 40,
-        y: 430,
-        width: 200,
-        height: 25
-    },
+let transitionTimer = 0;
 
-    // plataforma central
-    {
-        x: 300,
-        y: 350,
-        width: 180,
-        height: 25
-    },
 
-    // plataforma alta
-    {
-        x: 570,
-        y: 260,
-        width: 180,
-        height: 25
-    },
+/* =====================================================
+   CONTROLES
+===================================================== */
 
-    // plataforma direita
-    {
-        x: 790,
-        y: 420,
-        width: 160,
-        height: 25
-    },
+document.addEventListener("keydown", (event) => {
 
-    // parede
-    {
-        x: 250,
-        y: 430,
-        width: 25,
-        height: 120
-    },
+    keys[event.code] = true;
 
-    // parede
-    {
-        x: 500,
-        y: 350,
-        width: 25,
-        height: 200
-    },
-
-    // parede
-    {
-        x: 760,
-        y: 260,
-        width: 25,
-        height: 290
+    if (
+        [
+            "ArrowUp",
+            "ArrowDown",
+            "ArrowLeft",
+            "ArrowRight",
+            "Space"
+        ].includes(event.code)
+    ) {
+        event.preventDefault();
     }
-];
 
-/* =========================
-   PERIGOS
-========================= */
+});
 
-const hazards = [
+document.addEventListener("keyup", (event) => {
 
-    {
-        x: 275,
-        y: 525,
-        width: 50,
-        height: 25,
-        type: "lava"
-    },
+    keys[event.code] = false;
 
-    {
-        x: 525,
-        y: 525,
-        width: 50,
-        height: 25,
-        type: "water"
-    },
+});
 
-    {
-        x: 765,
-        y: 525,
-        width: 30,
-        height: 25,
-        type: "lava"
-    }
-];
 
-/* =========================
-   CRISTAIS
-========================= */
+/* =====================================================
+   JOGADORES
+===================================================== */
 
-let crystals = [
-    {
-        x: 360,
-        y: 315,
-        collectedFire: false,
-        collectedWater: false
-    },
+const fire = {
 
-    {
-        x: 630,
-        y: 225,
-        collectedFire: false,
-        collectedWater: false
-    },
+    x: 70,
+    y: 450,
 
-    {
-        x: 850,
-        y: 385,
-        collectedFire: false,
-        collectedWater: false
-    }
-];
+    width: 34,
+    height: 44,
 
-/* =========================
-   PORTA
-========================= */
+    color: "#ff4a21",
 
-const door = {
-    x: 900,
-    y: 475,
-    width: 55,
-    height: 75
+    vx: 0,
+    vy: 0,
+
+    speed: 4,
+    jump: -12,
+
+    grounded: false,
+
+    finished: false,
+    dead: false
+
 };
 
-/* =========================
-   COLISÃO
-========================= */
 
-function collision(a, b) {
+const water = {
 
-    return (
-        a.x < b.x + b.width &&
-        a.x + a.width > b.x &&
-        a.y < b.y + b.height &&
-        a.y + a.height > b.y
-    );
+    x: 125,
+    y: 450,
+
+    width: 34,
+    height: 44,
+
+    color: "#249cff",
+
+    vx: 0,
+    vy: 0,
+
+    speed: 4,
+    jump: -12,
+
+    grounded: false,
+
+    finished: false,
+    dead: false
+
+};
+
+
+/* =====================================================
+   FASES
+===================================================== */
+
+const levels = [
+
+    /* ================= FASE 1 ================= */
+
+    {
+
+        platforms: [
+
+            { x: 0, y: 550, width: 1000, height: 50 },
+
+            { x: 40, y: 430, width: 210, height: 25 },
+
+            { x: 320, y: 360, width: 170, height: 25 },
+
+            { x: 560, y: 280, width: 180, height: 25 },
+
+            { x: 790, y: 420, width: 160, height: 25 }
+
+        ],
+
+        hazards: [
+
+            {
+                x: 250,
+                y: 525,
+                width: 70,
+                height: 25,
+                type: "lava"
+            },
+
+            {
+                x: 490,
+                y: 525,
+                width: 70,
+                height: 25,
+                type: "water"
+            }
+
+        ],
+
+        door: {
+            x: 890,
+            y: 475,
+            width: 55,
+            height: 75
+        },
+
+        crystals: [
+
+            { x: 390, y: 325 },
+
+            { x: 635, y: 245 }
+
+        ]
+
+    },
+
+
+    /* ================= FASE 2 ================= */
+
+    {
+
+        platforms: [
+
+            { x: 0, y: 550, width: 1000, height: 50 },
+
+            { x: 30, y: 450, width: 150, height: 25 },
+
+            { x: 230, y: 380, width: 150, height: 25 },
+
+            { x: 430, y: 300, width: 150, height: 25 },
+
+            { x: 650, y: 380, width: 150, height: 25 },
+
+            { x: 840, y: 300, width: 120, height: 25 }
+
+        ],
+
+        hazards: [
+
+            {
+                x: 180,
+                y: 525,
+                width: 50,
+                height: 25,
+                type: "lava"
+            },
+
+            {
+                x: 380,
+                y: 525,
+                width: 50,
+                height: 25,
+                type: "water"
+            },
+
+            {
+                x: 580,
+                y: 525,
+                width: 70,
+                height: 25,
+                type: "lava"
+            },
+
+            {
+                x: 800,
+                y: 525,
+                width: 40,
+                height: 25,
+                type: "water"
+            }
+
+        ],
+
+        door: {
+            x: 890,
+            y: 225,
+            width: 55,
+            height: 75
+        },
+
+        crystals: [
+
+            { x: 270, y: 345 },
+
+            { x: 475, y: 265 },
+
+            { x: 700, y: 345 }
+
+        ]
+
+    },
+
+
+    /* ================= FASE 3 ================= */
+
+    {
+
+        platforms: [
+
+            { x: 0, y: 550, width: 1000, height: 50 },
+
+            { x: 40, y: 430, width: 180, height: 25 },
+
+            { x: 280, y: 330, width: 140, height: 25 },
+
+            { x: 470, y: 430, width: 150, height: 25 },
+
+            { x: 670, y: 300, width: 140, height: 25 },
+
+            { x: 850, y: 400, width: 120, height: 25 }
+
+        ],
+
+        hazards: [
+
+            {
+                x: 220,
+                y: 525,
+                width: 60,
+                height: 25,
+                type: "lava"
+            },
+
+            {
+                x: 420,
+                y: 525,
+                width: 50,
+                height: 25,
+                type: "water"
+            },
+
+            {
+                x: 620,
+                y: 525,
+                width: 50,
+                height: 25,
+                type: "lava"
+            },
+
+            {
+                x: 810,
+                y: 525,
+                width: 40,
+                height: 25,
+                type: "water"
+            }
+
+        ],
+
+        door: {
+            x: 905,
+            y: 325,
+            width: 55,
+            height: 75
+        },
+
+        crystals: [
+
+            { x: 320, y: 295 },
+
+            { x: 515, y: 395 },
+
+            { x: 710, y: 265 },
+
+            { x: 885, y: 365 }
+
+        ]
+
+    }
+
+];
+
+
+/* =====================================================
+   FASE ATUAL
+===================================================== */
+
+let level;
+
+
+/* =====================================================
+   INICIAR FASE
+===================================================== */
+
+function loadLevel(number) {
+
+    currentLevel = number;
+
+    level = levels[currentLevel];
+
+    fire.x = 70;
+    fire.y = 480;
+
+    fire.vx = 0;
+    fire.vy = 0;
+
+    fire.dead = false;
+    fire.finished = false;
+
+
+    water.x = 125;
+    water.y = 480;
+
+    water.vx = 0;
+    water.vy = 0;
+
+    water.dead = false;
+    water.finished = false;
+
+
+    // Clona os cristais para poder coletá-los
+    level.crystals = level.crystals.map(crystal => ({
+
+        x: crystal.x,
+        y: crystal.y,
+
+        fire: false,
+        water: false
+
+    }));
+
+
+    gameState = "playing";
+
+    message.textContent = "";
+
+    levelText.textContent =
+        `Fase ${currentLevel + 1} / ${levels.length}`;
+
 }
 
-/* =========================
+
+/* =====================================================
+   COLISÃO
+===================================================== */
+
+function intersects(a, b) {
+
+    return (
+
+        a.x < b.x + b.width &&
+
+        a.x + a.width > b.x &&
+
+        a.y < b.y + b.height &&
+
+        a.y + a.height > b.y
+
+    );
+
+}
+
+
+/* =====================================================
    MOVIMENTO
-========================= */
+===================================================== */
 
 function movePlayer(player, controls) {
 
     player.vx = 0;
 
+
     if (keys[controls.left]) {
+
         player.vx = -player.speed;
+
     }
+
 
     if (keys[controls.right]) {
+
         player.vx = player.speed;
+
     }
 
+
+    // Pulo
     if (
         keys[controls.jump] &&
         player.grounded
     ) {
+
         player.vy = player.jump;
+
         player.grounded = false;
+
     }
+
 
     // Movimento horizontal
     player.x += player.vx;
 
-    // Limites
+
     if (player.x < 0) {
+
         player.x = 0;
+
     }
 
+
     if (player.x + player.width > WIDTH) {
+
         player.x = WIDTH - player.width;
+
     }
+
 
     // Gravidade
     player.vy += gravity;
 
+
     if (player.vy > 14) {
+
         player.vy = 14;
+
     }
+
 
     player.y += player.vy;
 
+
     player.grounded = false;
 
-    // Colisão com plataformas
-    for (const platform of platforms) {
 
-        if (collision(player, platform)) {
+    // Plataformas
+    for (const platform of level.platforms) {
 
-            // Caindo sobre a plataforma
-            if (
-                player.vy >= 0 &&
-                player.y + player.height - player.vy <= platform.y
-            ) {
+        if (!intersects(player, platform)) {
 
-                player.y = platform.y - player.height;
+            continue;
 
-                player.vy = 0;
-
-                player.grounded = true;
-            }
-
-            // Batendo de baixo
-            else if (
-                player.vy < 0 &&
-                player.y - player.vy >= platform.y + platform.height
-            ) {
-
-                player.y =
-                    platform.y + platform.height;
-
-                player.vy = 0;
-            }
-
-            // Colisão lateral
-            else {
-
-                if (player.vx > 0) {
-                    player.x = platform.x - player.width;
-                }
-
-                if (player.vx < 0) {
-                    player.x =
-                        platform.x + platform.width;
-                }
-            }
         }
+
+
+        // Caindo em cima
+        if (
+            player.vy >= 0 &&
+            player.y + player.height - player.vy <= platform.y
+        ) {
+
+            player.y =
+                platform.y - player.height;
+
+            player.vy = 0;
+
+            player.grounded = true;
+
+        }
+
+
+        // Batendo por baixo
+        else if (
+            player.vy < 0 &&
+            player.y - player.vy >=
+            platform.y + platform.height
+        ) {
+
+            player.y =
+                platform.y + platform.height;
+
+            player.vy = 0;
+
+        }
+
+
+        // Colisão lateral
+        else {
+
+            if (player.vx > 0) {
+
+                player.x =
+                    platform.x - player.width;
+
+            }
+
+            if (player.vx < 0) {
+
+                player.x =
+                    platform.x + platform.width;
+
+            }
+
+        }
+
     }
+
 }
 
-/* =========================
+
+/* =====================================================
    PERIGOS
-========================= */
+===================================================== */
 
 function checkHazards(player) {
 
-    for (const hazard of hazards) {
+    for (const hazard of level.hazards) {
 
-        if (collision(player, hazard)) {
+        if (intersects(player, hazard)) {
 
             player.dead = true;
+
+            return;
+
         }
+
     }
 
-    // Queda
-    if (player.y > HEIGHT + 50) {
+
+    // Caiu fora do mapa
+    if (player.y > HEIGHT + 100) {
+
         player.dead = true;
+
     }
+
 }
 
-/* =========================
+
+/* =====================================================
    CRISTAIS
-========================= */
+===================================================== */
 
 function collectCrystals(player, type) {
 
-    for (const crystal of crystals) {
+    for (const crystal of level.crystals) {
 
         const item = {
-            x: crystal.x,
-            y: crystal.y,
-            width: 25,
-            height: 25
+
+            x: crystal.x - 12,
+            y: crystal.y - 12,
+
+            width: 24,
+            height: 24
+
         };
 
-        if (collision(player, item)) {
 
-            if (type === "fire") {
-                crystal.collectedFire = true;
-            }
+        if (!intersects(player, item)) {
 
-            if (type === "water") {
-                crystal.collectedWater = true;
-            }
+            continue;
+
         }
+
+
+        if (type === "fire") {
+
+            crystal.fire = true;
+
+        }
+
+
+        if (type === "water") {
+
+            crystal.water = true;
+
+        }
+
     }
+
 }
 
-/* =========================
+
+/* =====================================================
    PORTA
-========================= */
+===================================================== */
 
 function checkDoor(player) {
 
-    if (collision(player, door)) {
+    if (intersects(player, level.door)) {
 
-        // Jogador só entra se estiver na porta
         player.finished = true;
+
     }
+
 }
 
-/* =========================
-   DESENHAR JOGADOR
-========================= */
 
-function drawPlayer(player, emoji) {
+/* =====================================================
+   ATUALIZAR
+===================================================== */
 
-    ctx.save();
+function update() {
 
-    // sombra
-    ctx.fillStyle = "rgba(0,0,0,0.25)";
+    if (gameState !== "playing") {
 
-    ctx.beginPath();
+        return;
 
-    ctx.ellipse(
-        player.x + player.width / 2,
-        player.y + player.height,
-        20,
-        7,
-        0,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fill();
-
-    // corpo
-    ctx.fillStyle = player.color;
-
-    ctx.roundRect(
-        player.x,
-        player.y,
-        player.width,
-        player.height,
-        10
-    );
-
-    ctx.fill();
-
-    // emoji
-    ctx.font = "28px Arial";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-
-    ctx.fillText(
-        emoji,
-        player.x + player.width / 2,
-        player.y + player.height / 2
-    );
-
-    ctx.restore();
-}
-
-/* =========================
-   DESENHAR PLATAFORMAS
-========================= */
-
-function drawPlatforms() {
-
-    for (const p of platforms) {
-
-        const gradient =
-            ctx.createLinearGradient(
-                0,
-                p.y,
-                0,
-                p.y + p.height
-            );
-
-        gradient.addColorStop(0, "#6675c9");
-        gradient.addColorStop(1, "#303966");
-
-        ctx.fillStyle = gradient;
-
-        ctx.fillRect(
-            p.x,
-            p.y,
-            p.width,
-            p.height
-        );
-
-        // borda
-        ctx.strokeStyle = "#8996e5";
-        ctx.lineWidth = 2;
-
-        ctx.strokeRect(
-            p.x,
-            p.y,
-            p.width,
-            p.height
-        );
     }
-}
 
-/* =========================
-   DESENHAR PERIGOS
-========================= */
 
-function drawHazards() {
+    // FOGO
+    if (!fire.finished) {
 
-    for (const h of hazards) {
+        movePlayer(fire, {
 
-        if (h.type === "lava") {
-            ctx.fillStyle = "#ff3b20";
-        } else {
-            ctx.fillStyle = "#168dff";
-        }
+            left: "KeyA",
+            right: "KeyD",
+            jump: "KeyW"
 
-        ctx.fillRect(
-            h.x,
-            h.y,
-            h.width,
-            h.height
-        );
+        });
 
-        // brilho
-        ctx.fillStyle =
-            "rgba(255,255,255,0.35)";
+        checkHazards(fire);
 
-        ctx.fillRect(
-            h.x,
-            h.y,
-            h.width,
-            5
-        );
+        collectCrystals(fire, "fire");
+
+        checkDoor(fire);
+
     }
-}
 
-/* =========================
-   DESENHAR CRISTAIS
-========================= */
 
-function drawCrystals() {
+    // ÁGUA
+    if (!water.finished) {
 
-    for (const crystal of crystals) {
+        movePlayer(water, {
 
-        // Só desaparece quando os dois coletarem
-        if (
-            crystal.collectedFire &&
-            crystal.collectedWater
-        ) {
-            continue;
-        }
+            left: "ArrowLeft",
+            right: "ArrowRight",
+            jump: "ArrowUp"
 
-        ctx.save();
+        });
 
-        ctx.translate(
-            crystal.x + 12,
-            crystal.y + 12
-        );
+        checkHazards(water);
 
-        ctx.rotate(Math.PI / 4);
+        collectCrystals(water, "water");
 
-        ctx.fillStyle = "#ffe44d";
+        checkDoor(water);
 
-        ctx.fillRect(
-            -10,
-            -10,
-            20,
-            20
-        );
-
-        ctx.restore();
     }
+
+
+    // MORTE
+    if (fire.dead || water.dead) {
+
+        gameState = "dead";
+
+        message.textContent =
+            "💥 Um jogador morreu! Reinicie a fase.";
+
+        return;
+
+    }
+
+
+    // Os dois chegaram
+    if (
+        fire.finished &&
+        water.finished
+    ) {
+
+        gameState = "transition";
+
+        transitionTimer = 100;
+
+    }
+
 }
 
-/* =========================
-   DESENHAR PORTA
-========================= */
 
-function drawDoor() {
-
-    ctx.fillStyle = "#7b4cff";
-
-    ctx.fillRect(
-        door.x,
-        door.y,
-        door.width,
-        door.height
-    );
-
-    ctx.fillStyle = "#d8c7ff";
-
-    ctx.beginPath();
-
-    ctx.arc(
-        door.x + door.width / 2,
-        door.y + 35,
-        14,
-        Math.PI,
-        0
-    );
-
-    ctx.fill();
-
-    ctx.fillStyle = "#ffd84d";
-
-    ctx.beginPath();
-
-    ctx.arc(
-        door.x + 42,
-        door.y + 42,
-        4,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fill();
-
-    ctx.fillStyle = "white";
-    ctx.font = "14px Arial";
-
-    ctx.fillText(
-        "SAÍDA",
-        door.x - 5,
-        door.y - 8
-    );
-}
-
-/* =========================
+/* =====================================================
    DESENHAR FUNDO
-========================= */
+===================================================== */
 
 function drawBackground() {
 
+    const gradient =
+        ctx.createLinearGradient(
+            0,
+            0,
+            0,
+            HEIGHT
+        );
+
+
+    gradient.addColorStop(
+        0,
+        "#17204a"
+    );
+
+
+    gradient.addColorStop(
+        1,
+        "#090c1d"
+    );
+
+
+    ctx.fillStyle = gradient;
+
+    ctx.fillRect(
+        0,
+        0,
+        WIDTH,
+        HEIGHT
+    );
+
+
     // estrelas
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle =
+        "rgba(255,255,255,0.7)";
+
 
     const stars = [
-        [50, 60],
-        [150, 120],
-        [250, 70],
-        [400, 100],
-        [550, 50],
-        [700, 110],
-        [850, 60],
-        [940, 140]
+
+        [50, 70],
+        [130, 120],
+        [220, 50],
+        [350, 100],
+        [460, 65],
+        [570, 110],
+        [690, 55],
+        [820, 120],
+        [930, 65]
+
     ];
+
 
     for (const star of stars) {
 
@@ -634,247 +772,23 @@ function drawBackground() {
         );
 
         ctx.fill();
+
     }
+
 }
 
-/* =========================
-   RESET
-========================= */
 
-function resetGame() {
+/* =====================================================
+   DESENHAR PLATAFORMAS
+===================================================== */
 
-    fire.x = 80;
-    fire.y = 470;
-    fire.vx = 0;
-    fire.vy = 0;
-    fire.dead = false;
-    fire.finished = false;
+function drawPlatforms() {
 
-    water.x = 140;
-    water.y = 470;
-    water.vx = 0;
-    water.vy = 0;
-    water.dead = false;
-    water.finished = false;
+    for (const p of level.platforms) {
 
-    crystals = [
-        {
-            x: 360,
-            y: 315,
-            collectedFire: false,
-            collectedWater: false
-        },
-
-        {
-            x: 630,
-            y: 225,
-            collectedFire: false,
-            collectedWater: false
-        },
-
-        {
-            x: 850,
-            y: 385,
-            collectedFire: false,
-            collectedWater: false
-        }
-    ];
-}
-
-document
-    .getElementById("restart")
-    .addEventListener("click", resetGame);
-
-/* =========================
-   BOTÕES MOBILE
-========================= */
-
-document
-    .querySelectorAll("[data-key]")
-    .forEach(button => {
-
-        const key = button.dataset.key;
-
-        button.addEventListener("pointerdown", () => {
-            keys[key] = true;
-        });
-
-        button.addEventListener("pointerup", () => {
-            keys[key] = false;
-        });
-
-        button.addEventListener("pointerleave", () => {
-            keys[key] = false;
-        });
-
-        button.addEventListener("pointercancel", () => {
-            keys[key] = false;
-        });
-    });
-
-/* =========================
-   ATUALIZAÇÃO
-========================= */
-
-function update() {
-
-    if (
-        fire.dead ||
-        water.dead
-    ) {
-        return;
-    }
-
-    if (!fire.finished) {
-
-        movePlayer(fire, {
-            left: "KeyA",
-            right: "KeyD",
-            jump: "KeyW"
-        });
-
-        checkHazards(fire);
-
-        collectCrystals(fire, "fire");
-
-        checkDoor(fire);
-    }
-
-    if (!water.finished) {
-
-        movePlayer(water, {
-            left: "ArrowLeft",
-            right: "ArrowRight",
-            jump: "ArrowUp"
-        });
-
-        checkHazards(water);
-
-        collectCrystals(water, "water");
-
-        checkDoor(water);
-    }
-}
-
-/* =========================
-   DESENHAR
-========================= */
-
-function draw() {
-
-    ctx.clearRect(
-        0,
-        0,
-        WIDTH,
-        HEIGHT
-    );
-
-    drawBackground();
-
-    drawPlatforms();
-
-    drawHazards();
-
-    drawCrystals();
-
-    drawDoor();
-
-    if (!fire.dead) {
-        drawPlayer(fire, "🔥");
-    }
-
-    if (!water.dead) {
-        drawPlayer(water, "💧");
-    }
-
-    // Vitória
-    if (
-        fire.finished &&
-        water.finished
-    ) {
-
-        ctx.fillStyle =
-            "rgba(0,0,0,0.75)";
-
-        ctx.fillRect(
-            0,
-            0,
-            WIDTH,
-            HEIGHT
-        );
-
-        ctx.fillStyle = "#fff";
-
-        ctx.font = "bold 52px Arial";
-
-        ctx.textAlign = "center";
-
-        ctx.fillText(
-            "🎉 FASE COMPLETA!",
-            WIDTH / 2,
-            HEIGHT / 2
-        );
-
-        ctx.font = "24px Arial";
-
-        ctx.fillText(
-            "Os dois chegaram à saída!",
-            WIDTH / 2,
-            HEIGHT / 2 + 50
-        );
-    }
-
-    // Derrota
-    if (
-        fire.dead ||
-        water.dead
-    ) {
-
-        ctx.fillStyle =
-            "rgba(0,0,0,0.75)";
-
-        ctx.fillRect(
-            0,
-            0,
-            WIDTH,
-            HEIGHT
-        );
-
-        ctx.fillStyle = "#ff5555";
-
-        ctx.font = "bold 50px Arial";
-
-        ctx.textAlign = "center";
-
-        ctx.fillText(
-            "💥 VOCÊ PERDEU!",
-            WIDTH / 2,
-            HEIGHT / 2
-        );
-
-        ctx.fillStyle = "#fff";
-
-        ctx.font = "22px Arial";
-
-        ctx.fillText(
-            "Clique em Reiniciar para tentar novamente",
-            WIDTH / 2,
-            HEIGHT / 2 + 50
-        );
-    }
-}
-
-/* =========================
-   LOOP
-========================= */
-
-function gameLoop() {
-
-    update();
-
-    draw();
-
-    requestAnimationFrame(gameLoop);
-}
-
-gameLoop();
+        const gradient =
+            ctx.createLinearGradient(
+                0,
+                p.y,
+                0,
+                p.y +

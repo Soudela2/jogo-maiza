@@ -3,47 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fogo & Água</title>
+    <title>Fogo & Água - Aventura</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<div class="game-wrapper">
+    <main class="game-container">
 
-    <h1>🔥 Fogo & Água 💧</h1>
+        <h1>🔥 Fogo & Água 💧</h1>
 
-    <div class="info">
-        <span>🔥 WASD</span>
-        <span>💧 Setas</span>
-        <span>🚪 Cheguem juntos à porta!</span>
-    </div>
-
-    <canvas id="game" width="1000" height="600"></canvas>
-
-    <div class="mobile-controls">
-
-        <div class="control-player">
-            <h3>🔥 Fogo</h3>
-            <button data-key="KeyA">◀</button>
-            <button data-key="KeyD">▶</button>
-            <button data-key="KeyW">⬆</button>
+        <div class="topbar">
+            <span id="levelText">Fase 1</span>
+            <span>🔥 WASD</span>
+            <span>💧 SETAS</span>
         </div>
 
-        <div class="control-player">
-            <h3>💧 Água</h3>
-            <button data-key="ArrowLeft">◀</button>
-            <button data-key="ArrowRight">▶</button>
-            <button data-key="ArrowUp">⬆</button>
+        <canvas id="game" width="1000" height="600"></canvas>
+
+        <div id="message" class="message"></div>
+
+        <div class="mobile-controls">
+
+            <div>
+                <h3>🔥 Fogo</h3>
+
+                <button data-key="KeyA">◀</button>
+                <button data-key="KeyD">▶</button>
+                <button data-key="KeyW">⬆</button>
+            </div>
+
+            <div>
+                <h3>💧 Água</h3>
+
+                <button data-key="ArrowLeft">◀</button>
+                <button data-key="ArrowRight">▶</button>
+                <button data-key="ArrowUp">⬆</button>
+            </div>
+
         </div>
 
-    </div>
+        <button id="restart">🔄 Reiniciar fase</button>
 
-    <button id="restart">🔄 Reiniciar</button>
+    </main>
 
-</div>
-
-<script src="script.js"></script>
+    <script src="script.js"></script>
 
 </body>
 </html>
