@@ -3,48 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fogo & Água</title>
+    <title>Fogo & Água - Aventura</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
     <div id="menu">
-        <h1>🔥 FOGO & 💧 ÁGUA</h1>
+        <div class="menu-box">
+            <h1>🔥 FOGO & ÁGUA 💧</h1>
+            <p>Uma aventura para dois jogadores!</p>
 
-        <p>Jogo cooperativo para 2 jogadores</p>
+            <div class="controls">
+                <div>
+                    <h2>🔥 Foguinho</h2>
+                    <p>W A D</p>
+                    <small>W = pular<br>A/D = andar</small>
+                </div>
 
-        <div class="controles">
-            <div>
-                <h2>🔥 Foguinho</h2>
-                <p>A = Esquerda</p>
-                <p>W = Pular</p>
-                <p>D = Direita</p>
+                <div>
+                    <h2>💧 Aguinha</h2>
+                    <p>↑ ← →</p>
+                    <small>↑ = pular<br>←/→ = andar</small>
+                </div>
             </div>
 
-            <div>
-                <h2>💧 Água</h2>
-                <p>← = Esquerda</p>
-                <p>↑ = Pular</p>
-                <p>→ = Direita</p>
-            </div>
+            <button onclick="iniciarJogo()">JOGAR</button>
         </div>
-
-        <button onclick="iniciarJogo()">JOGAR</button>
     </div>
 
+
     <div id="game">
-        <div id="hud">
-            <span>🔥 Foguinho</span>
-            <span>💧 Água</span>
+
+        <div class="topbar">
+            <div>🔥 Foguinho: <b>W A D</b></div>
+            <div>💧 Aguinha: <b>← ↑ →</b></div>
         </div>
 
         <canvas id="canvas"></canvas>
 
         <div id="mensagem">
-            <h1 id="tituloMensagem"></h1>
-            <button onclick="reiniciarJogo()">Jogar novamente</button>
+            <div class="message-box">
+                <h1 id="tituloMensagem"></h1>
+                <p id="textoMensagem">
+                    Trabalhem juntos para completar a fase!
+                </p>
+
+                <button onclick="reiniciarJogo()">
+                    JOGAR NOVAMENTE
+                </button>
+
+                <button class="menu-button" onclick="voltarMenu()">
+                    MENU
+                </button>
+            </div>
         </div>
+
     </div>
 
     <script src="script.js"></script>

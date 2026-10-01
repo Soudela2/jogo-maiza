@@ -1,157 +1,314 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-let W = 1200;
-let H = 700;
+const W = 1200;
+const H = 700;
 
 canvas.width = W;
 canvas.height = H;
 
+
+/* ======================================
+   TECLADO
+====================================== */
+
 const keys = {};
 
-document.addEventListener("keydown", (e) => {
+document.addEventListener("keydown", function(e) {
+
     keys[e.key.toLowerCase()] = true;
 
     if (
-        ["arrowup", "arrowdown", "arrowleft", "arrowright", " "]
-        .includes(e.key.toLowerCase())
+        [
+            "arrowup",
+            "arrowdown",
+            "arrowleft",
+            "arrowright",
+            " "
+        ].includes(e.key.toLowerCase())
     ) {
         e.preventDefault();
     }
 });
 
-document.addEventListener("keyup", (e) => {
+document.addEventListener("keyup", function(e) {
+
     keys[e.key.toLowerCase()] = false;
 });
 
 
-// ======================================
-// JOGADORES
-// ======================================
+/* ======================================
+   ESTADO DO JOGO
+====================================== */
+
+let jogoRodando = false;
+let jogoTerminou = false;
 
 let fire;
 let water;
 
+
+/* ======================================
+   JOGADORES
+====================================== */
+
 function criarJogadores() {
 
     fire = {
-        x: 80,
-        y: 560,
+        x: 55,
+        y: 550,
+
         width: 34,
         height: 45,
+
         vx: 0,
         vy: 0,
+
         speed: 4.5,
         jump: -11,
+
         grounded: false,
         alive: true,
-        color: "#ff4d32"
+
+        color: "#ff4b32",
+
+        tipo: "fire"
     };
 
+
     water = {
-        x: 140,
-        y: 560,
+        x: 110,
+        y: 550,
+
         width: 34,
         height: 45,
+
         vx: 0,
         vy: 0,
+
         speed: 4.5,
         jump: -11,
+
         grounded: false,
         alive: true,
-        color: "#36a9ff"
+
+        color: "#35aaff",
+
+        tipo: "water"
     };
 }
 
 
-// ======================================
-// MAPA
-// ======================================
+/* ======================================
+   MAPA
+====================================== */
 
 const platforms = [
 
     // chão
-    {x: 0, y: 620, w: 1200, h: 80},
+    {
+        x: 0,
+        y: 620,
+        w: 1200,
+        h: 80
+    },
 
-    // plataformas
-    {x: 100, y: 500, w: 230, h: 25},
-    {x: 410, y: 430, w: 200, h: 25},
-    {x: 690, y: 510, w: 190, h: 25},
-    {x: 920, y: 420, w: 180, h: 25},
+    // primeira área
+    {
+        x: 90,
+        y: 510,
+        w: 230,
+        h: 25
+    },
 
-    // plataformas superiores
-    {x: 250, y: 330, w: 180, h: 25},
-    {x: 520, y: 260, w: 190, h: 25},
-    {x: 800, y: 320, w: 180, h: 25}
+    {
+        x: 400,
+        y: 445,
+        w: 190,
+        h: 25
+    },
+
+    {
+        x: 690,
+        y: 505,
+        w: 190,
+        h: 25
+    },
+
+    {
+        x: 930,
+        y: 425,
+        w: 190,
+        h: 25
+    },
+
+    // parte superior
+    {
+        x: 240,
+        y: 345,
+        w: 180,
+        h: 25
+    },
+
+    {
+        x: 510,
+        y: 275,
+        w: 190,
+        h: 25
+    },
+
+    {
+        x: 800,
+        y: 330,
+        w: 180,
+        h: 25
+    }
 ];
 
 
-// ======================================
-// LAVA
-// ======================================
+/* ======================================
+   LAVA
+====================================== */
 
 const lava = [
-    {x: 335, y: 590, w: 75, h: 30},
-    {x: 610, y: 590, w: 80, h: 30},
-    {x: 880, y: 590, w: 80, h: 30}
+
+    {
+        x: 320,
+        y: 590,
+        w: 80,
+        h: 30
+    },
+
+    {
+        x: 590,
+        y: 590,
+        w: 100,
+        h: 30
+    },
+
+    {
+        x: 880,
+        y: 590,
+        w: 80,
+        h: 30
+    }
 ];
 
 
-// ======================================
-// ÁGUA
-// ======================================
+/* ======================================
+   ÁGUA
+====================================== */
 
 const waterPools = [
-    {x: 500, y: 580, w: 100, h: 40},
-    {x: 760, y: 580, w: 100, h: 40}
+
+    {
+        x: 480,
+        y: 580,
+        w: 110,
+        h: 40
+    },
+
+    {
+        x: 760,
+        y: 580,
+        w: 120,
+        h: 40
+    }
 ];
 
 
-// ======================================
-// PORTAS
-// ======================================
+/* ======================================
+   CRISTAIS
+====================================== */
+
+const crystals = [
+
+    {
+        x: 180,
+        y: 470,
+        collected: false
+    },
+
+    {
+        x: 455,
+        y: 405,
+        collected: false
+    },
+
+    {
+        x: 575,
+        y: 235,
+        collected: false
+    },
+
+    {
+        x: 850,
+        y: 290,
+        collected: false
+    },
+
+    {
+        x: 1000,
+        y: 380,
+        collected: false
+    }
+];
+
+
+/* ======================================
+   PORTAS
+====================================== */
 
 const fireDoor = {
-    x: 1060,
-    y: 355,
-    w: 40,
+    x: 1040,
+    y: 360,
+    w: 45,
     h: 65
 };
 
 const waterDoor = {
-    x: 1110,
-    y: 355,
-    w: 40,
+    x: 1100,
+    y: 360,
+    w: 45,
     h: 65
 };
 
 
-// ======================================
-// FÍSICA
-// ======================================
+/* ======================================
+   FÍSICA
+====================================== */
 
 const gravity = 0.55;
 
 
-function atualizarJogador(player, tipo) {
+function atualizarJogador(player) {
 
-    if (!player.alive) return;
+    if (!player.alive) {
+        return;
+    }
+
 
     let esquerda;
     let direita;
     let pular;
 
-    if (tipo === "fire") {
+
+    if (player.tipo === "fire") {
+
         esquerda = keys["a"];
         direita = keys["d"];
         pular = keys["w"];
+
     } else {
+
         esquerda = keys["arrowleft"];
         direita = keys["arrowright"];
         pular = keys["arrowup"];
     }
 
+
     player.vx = 0;
+
 
     if (esquerda) {
         player.vx = -player.speed;
@@ -161,17 +318,25 @@ function atualizarJogador(player, tipo) {
         player.vx = player.speed;
     }
 
+
     if (pular && player.grounded) {
+
         player.vy = player.jump;
+
         player.grounded = false;
     }
 
+
     player.vy += gravity;
 
-    // movimento horizontal
+
+    /* -------------------------
+       MOVIMENTO HORIZONTAL
+    ------------------------- */
+
     player.x += player.vx;
 
-    // colisão horizontal com paredes
+
     for (const p of platforms) {
 
         if (colide(player, p)) {
@@ -186,29 +351,43 @@ function atualizarJogador(player, tipo) {
         }
     }
 
-    // movimento vertical
+
+    /* -------------------------
+       MOVIMENTO VERTICAL
+    ------------------------- */
+
     player.y += player.vy;
 
     player.grounded = false;
+
 
     for (const p of platforms) {
 
         if (colide(player, p)) {
 
             if (player.vy > 0) {
+
                 player.y = p.y - player.height;
+
                 player.vy = 0;
+
                 player.grounded = true;
             }
 
-            if (player.vy < 0) {
+            else if (player.vy < 0) {
+
                 player.y = p.y + p.h;
+
                 player.vy = 0;
             }
         }
     }
 
-    // limites
+
+    /* -------------------------
+       LIMITES
+    ------------------------- */
+
     if (player.x < 0) {
         player.x = 0;
     }
@@ -217,19 +396,26 @@ function atualizarJogador(player, tipo) {
         player.x = W - player.width;
     }
 
-    // caiu do mapa
+
+    /* -------------------------
+       QUEDA
+    ------------------------- */
+
     if (player.y > H + 100) {
+
         player.alive = false;
     }
 
-    // perigos
-    verificarPerigos(player, tipo);
+
+    verificarPerigos(player);
+
+    coletarCristais(player);
 }
 
 
-// ======================================
-// COLISÃO
-// ======================================
+/* ======================================
+   COLISÃO
+====================================== */
 
 function colide(a, b) {
 
@@ -242,37 +428,73 @@ function colide(a, b) {
 }
 
 
-// ======================================
-// PERIGOS
-// ======================================
+/* ======================================
+   PERIGOS
+====================================== */
 
-function verificarPerigos(player, tipo) {
+function verificarPerigos(player) {
 
+    // Lava
     for (const l of lava) {
 
         if (colide(player, l)) {
 
-            if (tipo === "water") {
+            if (player.tipo === "water") {
+
                 player.alive = false;
+
+                return;
             }
         }
     }
 
+
+    // Água
     for (const w of waterPools) {
 
         if (colide(player, w)) {
 
-            if (tipo === "fire") {
+            if (player.tipo === "fire") {
+
                 player.alive = false;
+
+                return;
             }
         }
     }
 }
 
 
-// ======================================
-// PORTAS
-// ======================================
+/* ======================================
+   CRISTAIS
+====================================== */
+
+function coletarCristais(player) {
+
+    for (const crystal of crystals) {
+
+        if (crystal.collected) {
+            continue;
+        }
+
+        const c = {
+            x: crystal.x - 10,
+            y: crystal.y - 10,
+            w: 20,
+            h: 20
+        };
+
+        if (colide(player, c)) {
+
+            crystal.collected = true;
+        }
+    }
+}
+
+
+/* ======================================
+   PORTAS
+====================================== */
 
 function chegouNaPorta(player, porta) {
 
@@ -280,138 +502,360 @@ function chegouNaPorta(player, porta) {
 }
 
 
+/* ======================================
+   VITÓRIA
+====================================== */
+
 function verificarVitoria() {
-
-    if (
-        chegouNaPorta(fire, fireDoor) &&
-        chegouNaPorta(water, waterDoor)
-    ) {
-
-        jogoTerminou = true;
-
-        mostrarMensagem("🎉 OS DOIS VENCERAM!");
-    }
 
     if (!fire.alive || !water.alive) {
 
         jogoTerminou = true;
 
-        mostrarMensagem("💥 VOCÊS PERDERAM!");
+        mostrarMensagem(
+            "💥 VOCÊS PERDERAM!"
+        );
+
+        return;
+    }
+
+
+    const fireChegou =
+        chegouNaPorta(fire, fireDoor);
+
+    const waterChegou =
+        chegouNaPorta(water, waterDoor);
+
+
+    if (fireChegou && waterChegou) {
+
+        jogoTerminou = true;
+
+        mostrarMensagem(
+            "🎉 VOCÊS VENCERAM!"
+        );
     }
 }
 
 
-// ======================================
-// DESENHO DO MAPA
-// ======================================
+/* ======================================
+   DESENHO DO FUNDO
+====================================== */
 
-function desenharMapa() {
+function desenharFundo() {
 
-    // fundo
-    const gradiente = ctx.createLinearGradient(0, 0, 0, H);
-
-    gradiente.addColorStop(0, "#101936");
-    gradiente.addColorStop(1, "#191027");
-
-    ctx.fillStyle = gradiente;
-    ctx.fillRect(0, 0, W, H);
-
-
-    // estrelas
-    ctx.fillStyle = "rgba(255,255,255,.4)";
-
-    for (let i = 0; i < 70; i++) {
-
-        const x = (i * 173) % W;
-        const y = (i * 97) % 350;
-
-        ctx.fillRect(x, y, 2, 2);
-    }
-
-
-    // plataformas
-    for (const p of platforms) {
-
-        const grad = ctx.createLinearGradient(
+    const gradiente =
+        ctx.createLinearGradient(
             0,
-            p.y,
             0,
-            p.y + p.h
+            0,
+            H
         );
 
-        grad.addColorStop(0, "#6947a5");
-        grad.addColorStop(1, "#38265d");
+    gradiente.addColorStop(
+        0,
+        "#111a3d"
+    );
 
-        ctx.fillStyle = grad;
-        ctx.fillRect(p.x, p.y, p.w, p.h);
+    gradiente.addColorStop(
+        1,
+        "#1b102b"
+    );
 
-        ctx.fillStyle = "#8d6ac4";
-        ctx.fillRect(p.x, p.y, p.w, 5);
+    ctx.fillStyle = gradiente;
+
+    ctx.fillRect(
+        0,
+        0,
+        W,
+        H
+    );
+
+
+    /* estrelas */
+
+    ctx.fillStyle =
+        "rgba(255,255,255,.5)";
+
+    for (let i = 0; i < 90; i++) {
+
+        const x =
+            (i * 173) % W;
+
+        const y =
+            (i * 91) % 380;
+
+        const tamanho =
+            i % 4 === 0 ? 3 : 2;
+
+        ctx.fillRect(
+            x,
+            y,
+            tamanho,
+            tamanho
+        );
     }
 
 
-    // lava
-    for (const l of lava) {
+    /* lua */
 
-        ctx.fillStyle = "#e72d20";
-        ctx.fillRect(l.x, l.y, l.w, l.h);
+    ctx.fillStyle =
+        "#e8e5ff";
 
-        ctx.fillStyle = "#ff7b00";
+    ctx.beginPath();
 
-        for (let x = l.x; x < l.x + l.w; x += 15) {
+    ctx.arc(
+        1080,
+        100,
+        38,
+        0,
+        Math.PI * 2
+    );
 
-            ctx.beginPath();
+    ctx.fill();
 
-            ctx.arc(
-                x + 7,
-                l.y + 5,
-                8,
+    ctx.fillStyle =
+        "#111a3d";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        1095,
+        88,
+        38,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+}
+
+
+/* ======================================
+   DESENHAR PLATAFORMAS
+====================================== */
+
+function desenharPlataformas() {
+
+    for (const p of platforms) {
+
+        const grad =
+            ctx.createLinearGradient(
                 0,
-                Math.PI * 2
+                p.y,
+                0,
+                p.y + p.h
             );
 
-            ctx.fill();
-        }
+        grad.addColorStop(
+            0,
+            "#7350aa"
+        );
+
+        grad.addColorStop(
+            1,
+            "#35234f"
+        );
+
+        ctx.fillStyle = grad;
+
+        ctx.fillRect(
+            p.x,
+            p.y,
+            p.w,
+            p.h
+        );
+
+
+        ctx.fillStyle =
+            "#a27bd5";
+
+        ctx.fillRect(
+            p.x,
+            p.y,
+            p.w,
+            5
+        );
     }
+}
 
 
-    // água
-    for (const w of waterPools) {
+/* ======================================
+   DESENHAR LAVA
+====================================== */
 
-        ctx.fillStyle = "#168de2";
-        ctx.fillRect(w.x, w.y, w.w, w.h);
+function desenharLava() {
 
-        ctx.fillStyle = "#62c7ff";
+    for (const l of lava) {
 
-        for (let x = w.x; x < w.x + w.w; x += 20) {
+        ctx.fillStyle =
+            "#e62e22";
+
+        ctx.fillRect(
+            l.x,
+            l.y,
+            l.w,
+            l.h
+        );
+
+
+        ctx.fillStyle =
+            "#ff8a00";
+
+
+        for (
+            let x = l.x;
+            x < l.x + l.w;
+            x += 20
+        ) {
 
             ctx.beginPath();
 
             ctx.arc(
                 x + 10,
-                w.y + 4,
+                l.y + 4,
                 10,
                 Math.PI,
-                Math.PI * 2
+                0
+            );
+
+            ctx.fill();
+        }
+
+
+        ctx.fillStyle =
+            "rgba(255,220,50,.5)";
+
+        ctx.fillRect(
+            l.x,
+            l.y + 20,
+            l.w,
+            5
+        );
+    }
+}
+
+
+/* ======================================
+   DESENHAR ÁGUA
+====================================== */
+
+function desenharAgua() {
+
+    for (const w of waterPools) {
+
+        ctx.fillStyle =
+            "#168ee5";
+
+        ctx.fillRect(
+            w.x,
+            w.y,
+            w.w,
+            w.h
+        );
+
+
+        ctx.fillStyle =
+            "#70d4ff";
+
+
+        for (
+            let x = w.x;
+            x < w.x + w.w;
+            x += 20
+        ) {
+
+            ctx.beginPath();
+
+            ctx.arc(
+                x + 10,
+                w.y + 5,
+                10,
+                Math.PI,
+                0
             );
 
             ctx.fill();
         }
     }
-
-
-    desenharPorta(fireDoor, "#ff4d32", "🔥");
-    desenharPorta(waterDoor, "#36a9ff", "💧");
 }
 
 
-// ======================================
-// PORTAS
-// ======================================
+/* ======================================
+   DESENHAR CRISTAIS
+====================================== */
 
-function desenharPorta(porta, cor, emoji) {
+function desenharCristais() {
 
-    ctx.fillStyle = "#171722";
+    for (const crystal of crystals) {
+
+        if (crystal.collected) {
+            continue;
+        }
+
+
+        ctx.save();
+
+        ctx.translate(
+            crystal.x,
+            crystal.y
+        );
+
+        ctx.rotate(
+            Math.PI / 4
+        );
+
+
+        const grad =
+            ctx.createLinearGradient(
+                -10,
+                -10,
+                10,
+                10
+            );
+
+        grad.addColorStop(
+            0,
+            "#fff"
+        );
+
+        grad.addColorStop(
+            .3,
+            "#ffe65c"
+        );
+
+        grad.addColorStop(
+            1,
+            "#ff9d00"
+        );
+
+        ctx.fillStyle = grad;
+
+        ctx.fillRect(
+            -9,
+            -9,
+            18,
+            18
+        );
+
+
+        ctx.restore();
+    }
+}
+
+
+/* ======================================
+   PORTAS
+====================================== */
+
+function desenharPorta(
+    porta,
+    cor,
+    emoji
+) {
+
+    ctx.fillStyle =
+        "#11111d";
 
     ctx.fillRect(
         porta.x,
@@ -420,7 +864,10 @@ function desenharPorta(porta, cor, emoji) {
         porta.h
     );
 
-    ctx.strokeStyle = cor;
+
+    ctx.strokeStyle =
+        cor;
+
     ctx.lineWidth = 4;
 
     ctx.strokeRect(
@@ -430,26 +877,65 @@ function desenharPorta(porta, cor, emoji) {
         porta.h
     );
 
-    ctx.font = "25px Arial";
-    ctx.textAlign = "center";
+
+    ctx.shadowColor = cor;
+    ctx.shadowBlur = 15;
+
+    ctx.strokeRect(
+        porta.x + 5,
+        porta.y + 5,
+        porta.w - 10,
+        porta.h - 10
+    );
+
+    ctx.shadowBlur = 0;
+
+
+    ctx.font =
+        "26px Arial";
+
+    ctx.textAlign =
+        "center";
 
     ctx.fillText(
         emoji,
         porta.x + porta.w / 2,
-        porta.y + 40
+        porta.y + 42
     );
 }
 
 
-// ======================================
-// DESENHAR JOGADORES
-// ======================================
+function desenharPortas() {
 
-function desenharJogador(player, tipo) {
+    desenharPorta(
+        fireDoor,
+        "#ff4b32",
+        "🔥"
+    );
 
-    if (!player.alive) return;
+    desenharPorta(
+        waterDoor,
+        "#35aaff",
+        "💧"
+    );
+}
+
+
+/* ======================================
+   PERSONAGENS
+====================================== */
+
+function desenharJogador(
+    player
+) {
+
+    if (!player.alive) {
+        return;
+    }
+
 
     ctx.save();
+
 
     ctx.translate(
         player.x + player.width / 2,
@@ -457,131 +943,328 @@ function desenharJogador(player, tipo) {
     );
 
 
-    // corpo
-    ctx.fillStyle = player.color;
+    /* sombra */
+
+    ctx.fillStyle =
+        "rgba(0,0,0,.25)";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        0,
+        25,
+        20,
+        5,
+        0,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+
+    /* corpo */
+
+    ctx.shadowColor =
+        player.color;
+
+    ctx.shadowBlur =
+        18;
+
+    ctx.fillStyle =
+        player.color;
+
 
     ctx.beginPath();
 
     ctx.roundRect(
-        -player.width / 2,
-        -player.height / 2,
-        player.width,
-        player.height,
+        -17,
+        -23,
+        34,
+        45,
         10
     );
 
     ctx.fill();
 
 
-    // brilho
-    ctx.shadowColor = player.color;
-    ctx.shadowBlur = 15;
-
-
-    // olhos
     ctx.shadowBlur = 0;
 
-    ctx.fillStyle = "white";
+
+    /* olhos */
+
+    ctx.fillStyle =
+        "white";
 
     ctx.beginPath();
-    ctx.arc(-7, -8, 5, 0, Math.PI * 2);
-    ctx.arc(7, -8, 5, 0, Math.PI * 2);
+
+    ctx.arc(
+        -7,
+        -8,
+        5,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.arc(
+        7,
+        -8,
+        5,
+        0,
+        Math.PI * 2
+    );
+
     ctx.fill();
 
 
-    ctx.fillStyle = "#111";
+    ctx.fillStyle =
+        "#111";
 
     ctx.beginPath();
-    ctx.arc(-7, -8, 2, 0, Math.PI * 2);
-    ctx.arc(7, -8, 2, 0, Math.PI * 2);
+
+    ctx.arc(
+        -7,
+        -8,
+        2,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.arc(
+        7,
+        -8,
+        2,
+        0,
+        Math.PI * 2
+    );
+
     ctx.fill();
 
 
-    // símbolo
-    ctx.font = "15px Arial";
-    ctx.textAlign = "center";
+    /* símbolo */
+
+    ctx.font =
+        "15px Arial";
+
+    ctx.textAlign =
+        "center";
 
     ctx.fillText(
-        tipo === "fire" ? "🔥" : "💧",
+        player.tipo === "fire"
+            ? "🔥"
+            : "💧",
         0,
-        20
+        19
     );
+
 
     ctx.restore();
 }
 
 
-// ======================================
-// CÂMERA / DESENHO
-// ======================================
+/* ======================================
+   TEXTO DO JOGO
+====================================== */
 
-function desenhar() {
+function desenharTexto() {
 
-    desenharMapa();
+    const coletados =
+        crystals.filter(
+            c => c.collected
+        ).length;
 
-    desenharJogador(fire, "fire");
-    desenharJogador(water, "water");
+
+    ctx.fillStyle =
+        "rgba(0,0,0,.45)";
+
+    ctx.fillRect(
+        20,
+        20,
+        190,
+        42
+    );
+
+
+    ctx.fillStyle =
+        "white";
+
+    ctx.font =
+        "bold 16px Arial";
+
+    ctx.textAlign =
+        "left";
+
+    ctx.fillText(
+        "💎 Cristais: " +
+        coletados +
+        "/" +
+        crystals.length,
+        35,
+        47
+    );
 }
 
 
-// ======================================
-// LOOP DO JOGO
-// ======================================
+/* ======================================
+   DESENHAR TUDO
+====================================== */
 
-let jogoRodando = false;
-let jogoTerminou = false;
+function desenhar() {
+
+    desenharFundo();
+
+    desenharPlataformas();
+
+    desenharLava();
+
+    desenharAgua();
+
+    desenharCristais();
+
+    desenharPortas();
+
+    desenharJogador(fire);
+
+    desenharJogador(water);
+
+    desenharTexto();
+}
+
+
+/* ======================================
+   LOOP
+====================================== */
 
 function loop() {
 
-    if (!jogoRodando) return;
+    if (!jogoRodando) {
+        return;
+    }
+
 
     if (!jogoTerminou) {
 
-        atualizarJogador(fire, "fire");
-        atualizarJogador(water, "water");
+        atualizarJogador(fire);
+
+        atualizarJogador(water);
 
         verificarVitoria();
     }
 
+
     desenhar();
+
 
     requestAnimationFrame(loop);
 }
 
 
-// ======================================
-// MENU
-// ======================================
+/* ======================================
+   INICIAR
+====================================== */
 
 function iniciarJogo() {
 
-    document.getElementById("menu").style.display = "none";
-    document.getElementById("game").style.display = "block";
+    document.getElementById(
+        "menu"
+    ).style.display = "none";
+
+
+    document.getElementById(
+        "game"
+    ).style.display = "flex";
+
 
     criarJogadores();
 
+
+    for (const crystal of crystals) {
+        crystal.collected = false;
+    }
+
+
     jogoTerminou = false;
+
     jogoRodando = true;
 
-    document.getElementById("mensagem").style.display = "none";
+
+    document.getElementById(
+        "mensagem"
+    ).style.display = "none";
+
 
     loop();
 }
 
 
+/* ======================================
+   REINICIAR
+====================================== */
+
 function reiniciarJogo() {
 
     criarJogadores();
 
+
+    for (const crystal of crystals) {
+        crystal.collected = false;
+    }
+
+
     jogoTerminou = false;
 
-    document.getElementById("mensagem").style.display = "none";
+
+    document.getElementById(
+        "mensagem"
+    ).style.display = "none";
 }
 
+
+/* ======================================
+   VOLTAR AO MENU
+====================================== */
+
+function voltarMenu() {
+
+    jogoRodando = false;
+
+    jogoTerminou = false;
+
+
+    document.getElementById(
+        "game"
+    ).style.display = "none";
+
+
+    document.getElementById(
+        "menu"
+    ).style.display = "flex";
+}
+
+
+/* ======================================
+   MENSAGEM
+====================================== */
 
 function mostrarMensagem(texto) {
 
-    document.getElementById("tituloMensagem").textContent = texto;
+    document.getElementById(
+        "tituloMensagem"
+    ).textContent = texto;
 
-    document.getElementById("mensagem").style.display = "flex";
+
+    const mensagem =
+        document.getElementById(
+            "mensagem"
+        );
+
+    mensagem.style.display = "flex";
 }
+
+
+/* ======================================
+   COMEÇAR
+====================================== */
+
+criarJogadores();
+desenhar();
