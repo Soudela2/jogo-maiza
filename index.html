@@ -3,168 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Mario vs Bowser</title>
-
+    <title>Fogo e Água - 2 Jogadores</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<div id="game">
+    <div id="game">
 
-    <div class="sun"></div>
+        <div id="hud">
+            <span>🔥 Jogador 1: WASD</span>
+            <span>💧 Jogador 2: SETAS</span>
+        </div>
 
-    <div class="cloud cloud1"></div>
-    <div class="cloud cloud2"></div>
-    <div class="cloud cloud3"></div>
+        <canvas id="gameCanvas"></canvas>
 
-    <div class="castle">
-
-        <div class="tower tower-left"></div>
-        <div class="tower tower-right"></div>
-
-        <div class="flag"></div>
-
-        <div id="peach">
-            <div class="peach-head"></div>
-            <div class="peach-body"></div>
-            <div class="crown"></div>
+        <div id="message">
+            <h1>Fogo e Água</h1>
+            <p>Trabalhem juntos para chegar à saída!</p>
+            <button id="startButton">COMEÇAR</button>
         </div>
 
     </div>
 
-    <div class="platform platform1"></div>
-    <div class="platform platform2"></div>
-    <div class="platform platform3"></div>
-
-    <div class="ground"></div>
-
-    <!-- HUD -->
-
-    <div id="hud">
-
-        <div class="hud-player">
-            <strong>🍄 MARIO - JOGADOR 1</strong>
-
-            <div class="health">
-                <div id="marioHealth"></div>
-            </div>
-        </div>
-
-        <div class="hud-player">
-            <strong>🐢 BOWSER - JOGADOR 2</strong>
-
-            <div class="health">
-                <div id="bowserHealth"></div>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- MARIO -->
-
-    <div id="mario" class="character mario">
-
-        <div class="head mario-head">
-            <span>M</span>
-        </div>
-
-        <div class="body mario-body"></div>
-
-        <div class="foot foot1"></div>
-        <div class="foot foot2"></div>
-
-    </div>
-
-    <!-- BOWSER -->
-
-    <div id="bowser" class="character bowser">
-
-        <div class="head bowser-head"></div>
-
-        <div class="body bowser-body"></div>
-
-        <div class="foot foot1"></div>
-        <div class="foot foot2"></div>
-
-    </div>
-
-    <!-- ATAQUES -->
-
-    <div id="marioAttack" class="attack mario-attack">
-        ⭐
-    </div>
-
-    <div id="bowserAttack" class="attack bowser-attack">
-        🔥
-    </div>
-
-    <!-- CONTROLES -->
-
-    <div class="controls">
-
-        <span>
-            🍄 Mario:
-            <b>A D</b> mover |
-            <b>W</b> pular |
-            <b>F</b> atacar
-        </span>
-
-        <span>
-            🐢 Bowser:
-            <b>← →</b> mover |
-            <b>↑</b> pular |
-            <b>L</b> atacar
-        </span>
-
-    </div>
-
-    <!-- TELA INICIAL -->
-
-    <div id="menu">
-
-        <div class="menu-box">
-
-            <h1>🍄 MARIO VS BOWSER 🐢</h1>
-
-            <h2>O combate pelo castelo começou!</h2>
-
-            <p>
-                Peach está presa dentro do castelo.
-            </p>
-
-            <p>
-                Mario precisa derrotar Bowser para libertá-la.
-            </p>
-
-            <hr>
-
-            <p>
-                <b>JOGADOR 1</b><br>
-                A / D = andar<br>
-                W = pular<br>
-                F = atacar
-            </p>
-
-            <p>
-                <b>JOGADOR 2</b><br>
-                ← / → = andar<br>
-                ↑ = pular<br>
-                L = atacar
-            </p>
-
-            <button id="startButton">
-                COMEÇAR
-            </button>
-
-        </div>
-
-    </div>
-
-</div>
-
-<script src="script.js"></script>
-
+    <script src="script.js"></script>
 </body>
 </html>
